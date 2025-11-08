@@ -1,0 +1,10 @@
+Coefficient: [[-0.85735312]]
+Intercept: [50.94705066]
+
+// z = wx+b
+
+min = 50.94
+max = -34.788
+
+medium 
+

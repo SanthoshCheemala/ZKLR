@@ -63,16 +63,37 @@ This system proves three critical properties using zero-knowledge proofs:
 
 ```
 .
-├── main.go              # Complete ZK-SNARK implementation
-├── cmd/sim/             # Network simulation runner (animated demo)
-├── simulation/          # Client-server simulation helpers
-├── lib/                 # Library metadata
-├── utils/               # Fixed-point arithmetic & data loaders
-├── data/                # Datasets and model parameters
-├── scripts/             # Python ML training scripts
-├── backup/              # Backup files (not in VCS)
-└── documentation/       # Internal notes (not in VCS)
+├── cmd/                     # Executables (entry points)
+│   └── security_demo/       # Security validation CLI/demo
+├── internal/                # Non-exported Go packages (future)
+├── pkg/                     # Exported Go packages (future)
+├── lib/                     # Existing shared logic (to be migrated)
+├── utils/                   # Fixed-point arithmetic & data loaders
+├── main.go                  # Root entrypoint (kept minimal)
+│
+├── data/                    # Datasets, models, caches
+│   ├── raw/                 # Raw CSVs (to be moved)
+│   ├── processed/           # Derived data (future)
+│   ├── models/              # Saved model parameters
+│   ├── cache/               # Circuit/proof caches (*.cache)
+│   └── README.md            # Data layout and migration notes
+│
+├── scripts/                 # Python ML training/evaluation
+├── metrics_output/          # Generated plots/metrics
+├── simulation/              # Client-server simulation helpers
+├── sim/                     # (Duplicate?) Consider merging with simulation/
+├── backup/                  # Legacy/archived files
+├── docs/                    # Documentation
+│   └── latex/               # LaTeX chapters (results, conclusion, etc.)
+├── documentation/           # Internal notes and structure guides
+│   └── README_STRUCTURE.md
+│
+├── README_PROJECT_STRUCTURE.md  # Proposed structure + migration plan
+├── go.mod
+└── go.sum
 ```
+
+See `README_PROJECT_STRUCTURE.md` for a detailed migration plan and rationale.
 
 ## 🚀 Quick Start
 

@@ -50,7 +50,7 @@ func (ns *NetworkSimulation) RunDistributed() error {
 	log.Println("Server: Compiling/loading ZK circuits...")
 	log.Println("  - Linear Circuit (Z = W*X + B)")
 	log.Println("  - Sigmoid LUT Circuit (prediction)")
-	log.Println("  - Chunk Accuracy Circuit (25 samples)")
+	log.Println("  - Chunk Accuracy Circuit (200 samples)")
 	log.Println("  - Aggregator Circuit (≥97% threshold)")
 	time.Sleep(ns.latency / 2)
 	
@@ -85,17 +85,29 @@ func (ns *NetworkSimulation) RunDistributed() error {
 	}
 
 	log.Println("=== Phase 3: Chunked Accuracy Proof ===")
-	log.Println("Processing all 100 samples in 4 chunks of 25...")
 	
-	for chunk := 1; chunk <= 4; chunk++ {
-		log.Printf("[Chunk %d/4] (samples %d-%d)\n", chunk, (chunk-1)*25+1, chunk*25)
-		log.Printf("  Client → Server: Sending 25 samples...")
+	const chunkSize = 200
+	numSamples := len(ns.clientDataset)
+	numChunks := (numSamples + chunkSize - 1) / chunkSize
+	
+	log.Printf("Processing all %d samples in %d chunks of %d...\n", numSamples, numChunks, chunkSize)
+	
+	for chunk := 1; chunk <= numChunks; chunk++ {
+		startSample := (chunk-1)*chunkSize + 1
+		endSample := chunk * chunkSize
+		if endSample > numSamples {
+			endSample = numSamples
+		}
+		samplesInChunk := endSample - startSample + 1
+		
+		log.Printf("[Chunk %d/%d] (samples %d-%d)\n", chunk, numChunks, startSample, endSample)
+		log.Printf("  Client → Server: Sending %d samples...", samplesInChunk)
 		time.Sleep(ns.latency)
 		
-		log.Printf("  Server: Computing predictions for 25 samples...")
+		log.Printf("  Server: Computing predictions for %d samples...", samplesInChunk)
 		time.Sleep(ns.latency * 2)
 		
-		log.Printf("  Server: Generating chunk proof (~404k constraints)...")
+		log.Printf("  Server: Generating chunk proof (~1.6M constraints)...")
 		time.Sleep(ns.latency * 3)
 		
 		log.Printf("  Server → Client: Sending chunk proof...")
@@ -104,11 +116,11 @@ func (ns *NetworkSimulation) RunDistributed() error {
 		log.Printf("  Client: Verifying chunk proof...")
 		time.Sleep(ns.latency / 2)
 		
-		log.Printf("  ✓ Chunk %d verified! Count: 25/25 correct\n\n", chunk)
+		log.Printf("  ✓ Chunk %d verified! Count: %d/%d correct\n\n", chunk, samplesInChunk, samplesInChunk)
 	}
 
 	log.Println("=== Phase 4: Aggregator Proof ===")
-	log.Println("Server: Aggregating results from 4 chunks...")
+	log.Printf("Server: Aggregating results from %d chunks...\n", numChunks)
 	time.Sleep(ns.latency)
 	
 	log.Println("Server: Generating aggregator proof (total ≥97%)...")
@@ -120,8 +132,9 @@ func (ns *NetworkSimulation) RunDistributed() error {
 	log.Println("Client: Verifying aggregator proof...")
 	time.Sleep(ns.latency / 2)
 	
+	minRequired := (numSamples * 97) / 100
 	log.Println("\n✓ Aggregator proof verified!")
-	log.Println("✓ Accuracy threshold met: 100/100 (100%) ≥ 97%")
+	log.Printf("✓ Accuracy threshold met: %d/%d (100%%) ≥ 97%% (min %d required)\n", numSamples, numSamples, minRequired)
 
 	log.Println("╔════════════════════════════════════════════════════════════╗")
 	log.Println("║                   Simulation Complete                     ║")

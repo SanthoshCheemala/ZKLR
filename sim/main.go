@@ -13,7 +13,7 @@ func main() {
 	latency := flag.Duration("latency", 100*time.Millisecond, "Simulated network latency")
 	flag.Parse()
 
-	datasetFile := "data/student_dataset_test.csv"
+	datasetFile := "data/student_dataset.csv"
 	modelFile := "data/best_model_parameters.txt"
 
 	if *animated {

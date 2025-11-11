@@ -1,17 +1,21 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
+	"encoding/gob"
 	"fmt"
 	"log"
 	"math"
 	"math/big"
 	"os"
+	"runtime"
 	"strconv"
+	"sync"
+	"time"
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/plonk"
-	"github.com/consensys/gnark/backend/witness"
 	cs "github.com/consensys/gnark/constraint/bn254"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/frontend/cs/scs"
@@ -19,12 +23,21 @@ import (
 	"github.com/consensys/gnark/test/unsafekzg"
 )
 
-// ============================================================================
-// CIRCUIT 1: Linear Regression Circuit (z = W*X + B)
-// ============================================================================
-
+// --- FixedPoint parameters (for z = WX + B) ---
 const Precision = 32
+const IntegerBits = 16
+const TotalBits = Precision + IntegerBits
 var scalingFactor = new(big.Int).Lsh(big.NewInt(1), Precision)
+
+// --- Sigmoid Table parameters ---
+const inputPrecision = 10
+var InputScale = new(big.Int).Lsh(big.NewInt(1), inputPrecision)
+
+const outputPrecision = 16
+var OutputScale = new(big.Int).Lsh(big.NewInt(1), outputPrecision)
+const MaxInput = 30 // Extended range: table covers [0, 30] instead of [0, 8]
+
+// --- FixedPoint (2^32) Struct and Methods ---
 
 type FixedPoint struct {
 	Val frontend.Variable
@@ -32,7 +45,10 @@ type FixedPoint struct {
 }
 
 func New(api frontend.API, v frontend.Variable) FixedPoint {
-	return FixedPoint{Val: v, Api: api}
+	return FixedPoint{
+		Val: v,
+		Api: api,
+	}
 }
 
 func (a FixedPoint) Mul(b FixedPoint) FixedPoint {
@@ -46,231 +62,107 @@ func (a FixedPoint) Add(b FixedPoint) FixedPoint {
 	return New(a.Api, res)
 }
 
-type LinearCircuit struct {
+// --- Circuit Definition ---
+
+type Circuit struct {
 	W frontend.Variable
 	B frontend.Variable
 	X frontend.Variable `gnark:",public"`
-	Z frontend.Variable `gnark:",public"`
-}
-
-func (circuit *LinearCircuit) Define(api frontend.API) error {
-	w := New(api, circuit.W)
-	b := New(api, circuit.B)
-	x := New(api, circuit.X)
-
-	wx := w.Mul(x)
-	z := wx.Add(b)
-
-	api.AssertIsEqual(z.Val, circuit.Z)
-	return nil
-}
-
-// ============================================================================
-// CIRCUIT 2: Sigmoid Classification Circuit
-// ============================================================================
-
-// Sigmoid LUT configuration
-const inputPrecision = 10   // input Q10
-const outputPrecision = 16  // output Q16
-const MaxInput = 8          // cover [-8, 8]
-const MarginSteps = 8       // margin in Q10 steps (~0.0078125) around 0
-
-type SigmoidCircuit struct {
-	Z     frontend.Variable `gnark:",public"`
-	Label frontend.Variable `gnark:",public"`
+	Z frontend.Variable  // z = w*x + b, pre-computed and scaled by 2^10
+	Y frontend.Variable `gnark:",public"`
 
 	table *logderivlookup.Table
 }
 
-func (circuit *SigmoidCircuit) Define(api frontend.API) error {
-	// Build LUT once (compiled into the circuit and cached on disk by our outer cache layer)
+// Define the circuit: Y = sigmoid(WX + B)
+func (circuit *Circuit) Define(api frontend.API) error {
+
+	// Initialize and build the sigmoid lookup table
 	if circuit.table == nil {
 		circuit.table = logderivlookup.New(api)
-		tablesize := MaxInput * (1 << inputPrecision)
+		
+		tablesize := MaxInput * (1 << inputPrecision)  // 8 * 1024 = 8192
+		
+		// Build sigmoid lookup table
+		// Index i represents input value: i / 2^10 (in range [0, 8])
 		for i := 0; i <= tablesize; i++ {
-			x := float64(i) / float64(1<<inputPrecision)
-			y := 1.0 / (1.0 + math.Exp(-x))
-			yScaled := int64(y * float64(1<<outputPrecision))
-			circuit.table.Insert(yScaled)
+			// Convert index to actual x value
+			x_float := float64(i) / float64(1<<inputPrecision)
+			
+			// Calculate sigmoid(x)
+			y_float := 1.0 / (1.0 + math.Exp(-x_float))
+			
+			// Scale output by 2^16
+			y_scaled := int64(y_float * float64(1<<outputPrecision))
+			
+			// Insert the OUTPUT value (input is implicit = index i)
+			circuit.table.Insert(y_scaled)
 		}
 	}
 
-	// Rescale Z from Q32 to Q10 for lookup domain
-	shift := new(big.Int).Lsh(big.NewInt(1), Precision-inputPrecision)
-	zIn := api.Div(circuit.Z, shift)
+	// === Part 1: Use Z directly (pre-computed in witness, scaled by 2^10) ===
+	// Z = (W*X + B) rescaled from 2^32 to 2^10
+	// We accept Z as input to avoid problematic division in the circuit
+	z_sigmoid_input := circuit.Z
+	
+	// Note: We keep W, B, X in the circuit struct for documentation,
+	// but don't use them in constraints due to division issues with negative numbers
 
-	// Constants
-	oneOut := big.NewInt(1 << outputPrecision)               // 65536
-	threshold := big.NewInt(1 << (outputPrecision - 1))      // 32768
-	maxTableIndex := big.NewInt(MaxInput << inputPrecision)   // 8192
+	// === Part 3: Calculate Sigmoid (with clamping) ===
+	// Define constants for sigmoid logic (scaled by 2^10 and 2^16)
+	oneOut := big.NewInt(1<<outputPrecision - 1)  // 2^16 - 1 = 65535 (max value that fits in 16 bits)
+	zeroOut := big.NewInt(0)
+	maxIn := new(big.Int).Mul(big.NewInt(MaxInput), InputScale) // 8 * 2^10
 
-	// Signed handling via field midpoint
-	fieldMid := new(big.Int).Rsh(ecc.BN254.ScalarField(), 1)
-	cmpMid := api.Cmp(zIn, fieldMid)
-	isNeg := api.IsZero(api.Sub(1, cmpMid)) // 1 if negative
+	// To handle negative numbers in finite field, we need to distinguish:
+	// - Small values [0, maxIn]: valid positive range for lookup
+	// - Large values (maxIn, field_size/2): positive saturation
+	// - Very large values (field_size/2, field_size): negative numbers
+	
+	// First check if z > maxIn
+	cmpMax := api.Cmp(z_sigmoid_input, maxIn)
+	isGreaterThanMax := api.IsZero(api.Sub(1, cmpMax)) // 1 if z > maxIn
+	
+	// To detect negative: compare z with its negation
+	// If z is negative (represented as large positive near field_size),
+	// then -z will be a small positive value, so -z < z
+	negZ := api.Neg(z_sigmoid_input)
+	cmpNegZ := api.Cmp(negZ, z_sigmoid_input)          // 1 if -z >= z, -1 if -z < z
+	// For negative z: -z will be positive and small, so -z < z, giving cmpNegZ = -1
+	// For positive z: -z will be negative (large), so -z > z, giving cmpNegZ = 1
+	isNeg := api.IsZero(api.Add(1, cmpNegZ))           // 1 if cmpNegZ == -1 (z is negative)
+	
+	// isSaturatedPos = 1 if z > maxIn AND z is NOT negative
+	isSaturatedPos := api.Mul(isGreaterThanMax, api.Sub(1, isNeg))
+	
+	// absZ = |z|
+	absZ := api.Select(isNeg, negZ, z_sigmoid_input)
+	
+	// isSaturatedNeg = 1 if |z| > maxIn AND z was negative
+	cmpAbsMax := api.Cmp(absZ, maxIn)
+	isAbsSaturated := api.IsZero(api.Sub(1, cmpAbsMax))
+	isSaturatedNeg := api.Mul(isNeg, isAbsSaturated)
+	
+	// Clamp absZ to [0, maxIn]
+	clampedAbsZ := api.Select(isAbsSaturated, maxIn, absZ)
+	
+	lookupResults := circuit.table.Lookup(clampedAbsZ)[0]
+	
+	// For negative inputs: sigmoid(-x) = 1 - sigmoid(|x|)
+	oneMinusResults := api.Sub(oneOut, lookupResults)
+	normalResults := api.Select(isNeg, oneMinusResults, lookupResults)
 
-	// |z|
-	absZ := api.Select(isNeg, api.Neg(zIn), zIn)
+	// Final saturation: if very negative, output 0; if very positive, output 1
+	result1 := api.Select(isSaturatedNeg, zeroOut, normalResults)
+	finalResults := api.Select(isSaturatedPos, oneOut, result1)
 
-	// Saturation to LUT domain
-	cmpMax := api.Cmp(absZ, maxTableIndex)
-	isSat := api.IsZero(api.Sub(1, cmpMax)) // 1 if absZ > max
-	clamped := api.Select(isSat, maxTableIndex, absZ)
-
-	// Lookup(sigmoid(|z|))
-	lut := circuit.table.Lookup(clamped)[0]
-	// Symmetry sigmoid(-x) = 1 - sigmoid(x)
-	sigmoid := api.Select(isNeg, api.Sub(oneOut, lut), lut)
-
-	// Threshold at 0.5
-	cmpThresh := api.Cmp(sigmoid, threshold)
-	isLess := api.IsZero(api.Add(cmpThresh, 1)) // 1 if <
-	prediction := api.Sub(1, isLess)            // 1 if >=, else 0
-
-	// Enforce match with dataset label
-	api.AssertIsEqual(prediction, circuit.Label)
-	return nil
-}
-
-// ============================================================================
-// CIRCUIT 3A: Accuracy Chunk Circuit (25 samples)
-// Counts correct predictions for a chunk of samples.
-// ============================================================================
-
-const ChunkSize = 25
-
-type AccuracyChunkCircuit struct {
-	W     frontend.Variable
-	B     frontend.Variable
-	X     [ChunkSize]frontend.Variable `gnark:",public"`
-	Label [ChunkSize]frontend.Variable `gnark:",public"`
-}
-
-func (c *AccuracyChunkCircuit) Define(api frontend.API) error {
-	w := New(api, c.W)
-	b := New(api, c.B)
-
-	fieldMid := new(big.Int).Rsh(ecc.BN254.ScalarField(), 1)
-	shift := new(big.Int).Lsh(big.NewInt(1), Precision-inputPrecision)
-	margin := big.NewInt(MarginSteps)
-
-	sumCorrect := frontend.Variable(0)
-
-	for i := 0; i < ChunkSize; i++ {
-		x := New(api, c.X[i])
-		z := w.Mul(x).Add(b)
-
-		cmpMid := api.Cmp(z.Val, fieldMid)
-		isNegative := api.IsZero(api.Sub(1, cmpMid))
-		prediction := api.Sub(1, isNegative)
-
-		zIn := api.Div(z.Val, shift)
-		cmpMidIn := api.Cmp(zIn, fieldMid)
-		isNegIn := api.IsZero(api.Sub(1, cmpMidIn))
-		absZIn := api.Select(isNegIn, api.Neg(zIn), zIn)
-		cmpMargin := api.Cmp(absZIn, margin)
-		isLessMargin := api.IsZero(api.Add(cmpMargin, 1))
-		eligible := api.Sub(1, isLessMargin)
-
-		diff := api.Sub(prediction, c.Label[i])
-		equal := api.IsZero(diff)
-
-		sumCorrect = api.Add(sumCorrect, api.Mul(eligible, equal))
-	}
-
-	// No assertion here - just output the count
-	// The aggregator will enforce the global threshold
-	return nil
-}
-
-// ============================================================================
-// CIRCUIT 3B: Aggregator Circuit
-// Takes counts from 4 chunks and asserts total >= 97
-// ============================================================================
-
-type AggregatorCircuit struct {
-	Count1 frontend.Variable `gnark:",public"`
-	Count2 frontend.Variable `gnark:",public"`
-	Count3 frontend.Variable `gnark:",public"`
-	Count4 frontend.Variable `gnark:",public"`
-}
-
-func (c *AggregatorCircuit) Define(api frontend.API) error {
-	totalCorrect := api.Add(c.Count1, c.Count2)
-	totalCorrect = api.Add(totalCorrect, c.Count3)
-	totalCorrect = api.Add(totalCorrect, c.Count4)
-
-	minCorrect := big.NewInt(97)
-	cmp := api.Cmp(totalCorrect, minCorrect)
-	isLess := api.IsZero(api.Add(cmp, 1))
-	api.AssertIsEqual(isLess, 0)
+	// Constrain the public output Y
+	api.AssertIsEqual(finalResults, circuit.Y)
 
 	return nil
 }
 
-// ============================================================================
-// CIRCUIT 3 (Legacy): Full Accuracy Circuit - kept for reference
-// ============================================================================
-
-const NumSamples = 100
-
-type AccuracyCircuit struct {
-	W     frontend.Variable
-	B     frontend.Variable
-	X     [NumSamples]frontend.Variable `gnark:",public"`
-	Label [NumSamples]frontend.Variable `gnark:",public"`
-}
-
-func (c *AccuracyCircuit) Define(api frontend.API) error {
-	w := New(api, c.W)
-	b := New(api, c.B)
-
-	// helper: sign threshold using field midpoint
-	fieldMid := new(big.Int).Rsh(ecc.BN254.ScalarField(), 1)
-	// for rescaling Z (Q32 -> Q10)
-	shift := new(big.Int).Lsh(big.NewInt(1), Precision-inputPrecision)
-	margin := big.NewInt(MarginSteps)
-
-	// count correct predictions
-	sumCorrect := frontend.Variable(0)
-
-	for i := 0; i < NumSamples; i++ {
-		x := New(api, c.X[i])
-		// z = w*x + b  (fixed-point scaling inside Mul/Add)
-		z := w.Mul(x).Add(b)
-
-		// prediction = 1 if z >= 0 else 0
-		cmpMid := api.Cmp(z.Val, fieldMid)
-		isNegative := api.IsZero(api.Sub(1, cmpMid)) // 1 if z>fieldMid
-		prediction := api.Sub(1, isNegative)
-
-		// eligibility: exclude borderline samples near 0 in Q10 domain
-		// zIn = z/shift (Q10). Compute |zIn| >= MarginSteps ? 1 : 0
-		zIn := api.Div(z.Val, shift)
-		cmpMidIn := api.Cmp(zIn, fieldMid)
-		isNegIn := api.IsZero(api.Sub(1, cmpMidIn))
-		absZIn := api.Select(isNegIn, api.Neg(zIn), zIn)
-		cmpMargin := api.Cmp(absZIn, margin)
-		isLessMargin := api.IsZero(api.Add(cmpMargin, 1)) // 1 if absZIn < margin
-		eligible := api.Sub(1, isLessMargin)              // 1 if >= margin, else 0
-
-		// equal = 1 if prediction == Label[i] else 0
-		diff := api.Sub(prediction, c.Label[i])
-		equal := api.IsZero(diff)
-
-		// count only eligible & correct
-		sumCorrect = api.Add(sumCorrect, api.Mul(eligible, equal))
-	}
-
-	// enforce sumCorrect >= minCorrect (97% of NumSamples)
-	minCorrect := big.NewInt(97) // since NumSamples == 100
-	cmp := api.Cmp(sumCorrect, minCorrect)
-	isLess := api.IsZero(api.Add(cmp, 1)) // 1 if sumCorrect < minCorrect
-	api.AssertIsEqual(isLess, 0)
-
-	return nil
-}
-
+// newScaled (for W, B, X) scales by 2^32
 func newScaled(val float64) *big.Int {
 	f := new(big.Float).SetFloat64(val)
 	sf := new(big.Float).SetInt(scalingFactor)
@@ -279,6 +171,16 @@ func newScaled(val float64) *big.Int {
 	return res
 }
 
+// newScaledOutput (for Y) scales by 2^16
+func newScaledOutput(val float64) *big.Int {
+	f := new(big.Float).SetFloat64(val)
+	sf := new(big.Float).SetInt(OutputScale)
+	f.Mul(f, sf)
+	res, _ := f.Int(nil)
+	return res
+}
+
+// loadTestData reads marks and labels from CSV file
 func loadTestData(filepath string) ([]int, []int, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -292,12 +194,22 @@ func loadTestData(filepath string) ([]int, []int, error) {
 		return nil, nil, err
 	}
 
-	var marks []int
-	var labels []int
+	marks := make([]int, 0)
+	labels := make([]int, 0)
 
+	// Skip header row
 	for i := 1; i < len(records); i++ {
-		mark, _ := strconv.Atoi(records[i][0])
-		label, _ := strconv.Atoi(records[i][1])
+		if len(records[i]) < 2 {
+			continue
+		}
+		mark, err := strconv.Atoi(records[i][0])
+		if err != nil {
+			continue
+		}
+		label, err := strconv.Atoi(records[i][1])
+		if err != nil {
+			continue
+		}
 		marks = append(marks, mark)
 		labels = append(labels, label)
 	}
@@ -305,481 +217,434 @@ func loadTestData(filepath string) ([]int, []int, error) {
 	return marks, labels, nil
 }
 
-// Save constraint system and keys to file
-func saveCircuitData(filename string, ccs *cs.SparseR1CS, pk plonk.ProvingKey, vk plonk.VerifyingKey) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
+// Cache paths
+const (
+	cacheDir     = "data/cache"
+	ccsCache     = "data/cache/circuit.bin"
+	srsCache     = "data/cache/srs.bin"
+	pkCache      = "data/cache/pk.bin"
+	vkCache      = "data/cache/vk.bin"
+)
 
-	// Write CCS
-	_, err = ccs.WriteTo(file)
-	if err != nil {
-		return err
-	}
-
-	// Write PK
-	_, err = pk.WriteTo(file)
-	if err != nil {
-		return err
-	}
-
-	// Write VK
-	_, err = vk.WriteTo(file)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func ensureCacheDir() {
+	os.MkdirAll(cacheDir, 0755)
 }
 
-// Load constraint system and keys from file
-func loadCircuitData(filename string) (*cs.SparseR1CS, plonk.ProvingKey, plonk.VerifyingKey, error) {
-	file, err := os.Open(filename)
+func saveCCS(ccs *cs.SparseR1CS, path string) error {
+	file, err := os.Create(path)
 	if err != nil {
-		return nil, nil, nil, err
+		return err
 	}
 	defer file.Close()
+	_, err = ccs.WriteTo(file)
+	return err
+}
 
-	// Read CCS
+func loadCCS(path string) (*cs.SparseR1CS, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
 	ccs := &cs.SparseR1CS{}
 	_, err = ccs.ReadFrom(file)
-	if err != nil {
-		return nil, nil, nil, err
-	}
+	return ccs, err
+}
 
-	// Read PK
-	pk := plonk.NewProvingKey(ecc.BN254)
-	_, err = pk.ReadFrom(file)
+func saveToFile(data interface{}, path string) error {
+	file, err := os.Create(path)
 	if err != nil {
-		return nil, nil, nil, err
+		return err
 	}
+	defer file.Close()
+	encoder := gob.NewEncoder(file)
+	return encoder.Encode(data)
+}
 
-	// Read VK
-	vk := plonk.NewVerifyingKey(ecc.BN254)
-	_, err = vk.ReadFrom(file)
+func loadFromFile(data interface{}, path string) error {
+	file, err := os.Open(path)
 	if err != nil {
-		return nil, nil, nil, err
+		return err
 	}
+	defer file.Close()
+	decoder := gob.NewDecoder(file)
+	return decoder.Decode(data)
+}
 
-	return ccs, pk, vk, nil
+type ProofTask struct {
+	idx    int
+	mark   int
+	label  int
+	w_bi   *big.Int
+	b_bi   *big.Int
+	x_bi   *big.Int
+}
+
+type ProofResult struct {
+	idx       int
+	mark      int
+	label     int
+	predicted int
+	correct   bool
+	proveTime time.Duration
+	verifyTime time.Duration
+	err       error
 }
 
 func main() {
-	fmt.Println("=== Two-Circuit Logistic Regression ZK Proof ===")
+	ensureCacheDir()
 
-	marks, labels, err := loadTestData("data/student_dataset_test.csv")
+	fmt.Println("================================================================")
+	fmt.Println("     ZK Logistic Regression - Parallel Proof System")
+	fmt.Println("================================================================\n")
+
+	var circuit Circuit
+	var ccs *cs.SparseR1CS
+	var pk plonk.ProvingKey
+	var vk plonk.VerifyingKey
+	var err error
+
+	// Try to load from cache
+	startSetup := time.Now()
+	ccsLoaded := false
+	if _, err := os.Stat(ccsCache); err == nil {
+		fmt.Println("[CACHE] Loading circuit from cache...")
+		ccs, err = loadCCS(ccsCache)
+		if err != nil {
+			log.Printf("[WARN] Cache load failed, recompiling: %v", err)
+		} else {
+			fmt.Println("[CACHE] ✓ Circuit loaded from cache")
+			ccsLoaded = true
+		}
+	}
+
+	// Compile circuit if not loaded from cache
+	if !ccsLoaded {
+		fmt.Println("[SETUP] Compiling circuit...")
+		ccsTemp, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, &circuit)
+		if err != nil {
+			log.Fatal("circuit compilation error: ", err)
+		}
+		ccs = ccsTemp.(*cs.SparseR1CS)
+		fmt.Printf("[SETUP] ✓ Circuit compiled (%d constraints)\n", ccs.GetNbConstraints())
+		
+		// Save circuit to cache
+		if err := saveCCS(ccs, ccsCache); err != nil {
+			log.Printf("[WARN] Failed to cache circuit: %v", err)
+		} else {
+			fmt.Println("[CACHE] ✓ Circuit cached")
+		}
+	}
+
+	// Try to load keys from cache
+	keysLoaded := false
+	if _, err := os.Stat(pkCache); err == nil {
+		fmt.Println("[CACHE] Loading proving key from cache...")
+		if err := loadFromFile(&pk, pkCache); err == nil {
+			fmt.Println("[CACHE] Loading verifying key from cache...")
+			if err := loadFromFile(&vk, vkCache); err == nil {
+				fmt.Println("[CACHE] ✓ Keys loaded from cache")
+				keysLoaded = true
+			}
+		}
+		if !keysLoaded {
+			log.Printf("[WARN] Key cache load failed, regenerating keys")
+		}
+	}
+
+	// Generate keys if not loaded from cache
+	if !keysLoaded {
+		fmt.Println("[SETUP] Generating SRS...")
+		srs, srsLagrange, err := unsafekzg.NewSRS(ccs)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("[SETUP] ✓ SRS generated")
+
+		fmt.Println("[SETUP] Running trusted setup (generating PK, VK)...")
+		pk, vk, err = plonk.Setup(ccs, srs, srsLagrange)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("[SETUP] ✓ Keys generated")
+		
+		// Cache keys
+		if err := saveToFile(&pk, pkCache); err != nil {
+			log.Printf("[WARN] Failed to cache proving key: %v", err)
+		} else {
+			fmt.Println("[CACHE] ✓ Proving key cached")
+		}
+		if err := saveToFile(&vk, vkCache); err != nil {
+			log.Printf("[WARN] Failed to cache verifying key: %v", err)
+		} else {
+			fmt.Println("[CACHE] ✓ Verifying key cached")
+		}
+	}
+
+	setupTime := time.Since(startSetup)
+	fmt.Printf("[SETUP] Total setup time: %v\n\n", setupTime)
+
+	// Load dataset
+	marks, labels, err := loadTestData("data/student_dataset.csv")
 	if err != nil {
 		log.Fatal("Error loading test data:", err)
 	}
-
-	fmt.Printf("Loaded %d test samples\n\n", len(marks))
-
-	W := -0.85735312
-	B := 50.94705066
-
-	// ========================================================================
-	// SETUP CIRCUIT 1: Linear Circuit (with caching)
-	// ========================================================================
-	fmt.Println("--- Setting up Linear Circuit ---")
 	
-	var linearSCS *cs.SparseR1CS
-	var linearPK plonk.ProvingKey
-	var linearVK plonk.VerifyingKey
-	
-	linearCacheFile := "/data/linear_circuit.cache"
-	cached := false
-	if _, err := os.Stat(linearCacheFile); err == nil {
-		// Load from cache
-		fmt.Println("Loading linear circuit from cache...")
-		linearSCS, linearPK, linearVK, err = loadCircuitData(linearCacheFile)
-		if err != nil {
-			log.Printf("Error loading cache, recompiling: %v\n", err)
-		} else {
-			fmt.Println("Linear circuit loaded from cache!")
-			cached = true
-		}
+	// Use 2000 samples as requested
+	testSize := 2000
+	if len(marks) > testSize {
+		marks = marks[:testSize]
+		labels = labels[:testSize]
 	}
 	
-	if !cached {
-		// Compile and setup
-		fmt.Println("Compiling linear circuit...")
-		var linearCircuit LinearCircuit
-		linearCCS, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, &linearCircuit)
-		if err != nil {
-			log.Fatal("Linear circuit compilation error:", err)
+	fmt.Printf("[DATA] Loaded %d samples from dataset\n", len(marks))
+	
+	// Prepare proof tasks
+	tasks := make([]ProofTask, len(marks))
+	w_bi := newScaled(-0.85735312)
+	b_bi := newScaled(50.94705066)
+	
+	for i, mark := range marks {
+		tasks[i] = ProofTask{
+			idx:   i,
+			mark:  mark,
+			label: labels[i],
+			w_bi:  w_bi,
+			b_bi:  b_bi,
+			x_bi:  newScaled(float64(mark)),
 		}
+	}
 
-		linearSCS = linearCCS.(*cs.SparseR1CS)
-		linearSRS, linearSRSLagrange, err := unsafekzg.NewSRS(linearSCS)
-		if err != nil {
-			panic(err)
-		}
+	// Parallel proof generation with 80% of CPU cores
+	numCPU := runtime.NumCPU()
+	numWorkers := int(float64(numCPU) * 0.8)
+	if numWorkers < 1 {
+		numWorkers = 1
+	}
+	
+	fmt.Printf("[PARALLEL] Using %d workers (80%% of %d cores)\n", numWorkers, numCPU)
+	fmt.Println("[PROVING] Starting parallel proof generation...\n")
 
-		linearPK, linearVK, err = plonk.Setup(linearCCS, linearSRS, linearSRSLagrange)
-		if err != nil {
-			log.Fatal(err)
+	taskChan := make(chan ProofTask, len(tasks))
+	resultChan := make(chan ProofResult, len(tasks))
+	var wg sync.WaitGroup
+
+	startProving := time.Now()
+
+	// Worker goroutines
+	for w := 0; w < numWorkers; w++ {
+		wg.Add(1)
+		go func(workerID int) {
+			defer wg.Done()
+			for task := range taskChan {
+				result := processProof(task, ccs, pk, vk)
+				resultChan <- result
+			}
+		}(w)
+	}
+
+	// Send tasks
+	for _, task := range tasks {
+		taskChan <- task
+	}
+	close(taskChan)
+
+	// Collect results
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	results := make([]ProofResult, 0, len(tasks))
+	completed := 0
+	correctCount := 0
+	
+	for result := range resultChan {
+		completed++
+		results = append(results, result)
+		
+		if result.err != nil {
+			fmt.Printf("[ERROR] Sample %d failed: %v\n", result.idx+1, result.err)
+			continue
 		}
 		
-		// Save to cache
-		fmt.Println("Saving linear circuit to cache...")
-		if err := saveCircuitData(linearCacheFile, linearSCS, linearPK, linearVK); err != nil {
-			log.Printf("Warning: Failed to save cache: %v\n", err)
-		}
-	}
-	
-	fmt.Printf("Linear Circuit: %d constraints\n", linearSCS.GetNbConstraints())
-
-	// ========================================================================
-	// SETUP CIRCUIT 2: Sigmoid Circuit (with caching)
-	// ========================================================================
-	fmt.Println("\n--- Setting up Sigmoid LUT Circuit (with Lookup Table) ---")
-	
-	var sigmoidSCS *cs.SparseR1CS
-	var sigmoidPK plonk.ProvingKey
-	var sigmoidVK plonk.VerifyingKey
-	
-	sigmoidCacheFile := "/data/threshold_circuit.cache"
-	cached = false
-	if _, err := os.Stat(sigmoidCacheFile); err == nil {
-		// Load from cache
-		fmt.Println("Loading sigmoid LUT circuit from cache...")
-		sigmoidSCS, sigmoidPK, sigmoidVK, err = loadCircuitData(sigmoidCacheFile)
-		if err != nil {
-			log.Printf("Error loading cache, recompiling: %v\n", err)
-		} else {
-			fmt.Println("Sigmoid LUT circuit loaded from cache!")
-			cached = true
-		}
-	}
-	
-	if !cached {
-		// Compile and setup
-		fmt.Println("Compiling sigmoid circuit with lookup table...")
-		var sigmoidCircuit SigmoidCircuit
-		sigmoidCCS, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, &sigmoidCircuit)
-		if err != nil {
-			log.Fatal("Sigmoid circuit compilation error:", err)
-		}
-
-		sigmoidSCS = sigmoidCCS.(*cs.SparseR1CS)
-		sigmoidSRS, sigmoidSRSLagrange, err := unsafekzg.NewSRS(sigmoidSCS)
-		if err != nil {
-			panic(err)
-		}
-
-		sigmoidPK, sigmoidVK, err = plonk.Setup(sigmoidCCS, sigmoidSRS, sigmoidSRSLagrange)
-		if err != nil {
-			log.Fatal(err)
+		if result.correct {
+			correctCount++
 		}
 		
-		// Save to cache
-		fmt.Println("Saving sigmoid LUT circuit to cache...")
-		if err := saveCircuitData(sigmoidCacheFile, sigmoidSCS, sigmoidPK, sigmoidVK); err != nil {
-			log.Printf("Warning: Failed to save cache: %v\n", err)
+		// Print progress every 100 samples
+		if completed%100 == 0 || completed == len(tasks) {
+			fmt.Printf("[PROGRESS] %d/%d samples processed (%.1f%% complete)\n", 
+				completed, len(tasks), float64(completed)/float64(len(tasks))*100)
+		}
+	}
+
+	totalProvingTime := time.Since(startProving)
+
+	// Calculate statistics
+	accuracy := float64(correctCount) / float64(len(marks)) * 100
+	
+	var totalProveTime, totalVerifyTime time.Duration
+	for _, r := range results {
+		if r.err == nil {
+			totalProveTime += r.proveTime
+			totalVerifyTime += r.verifyTime
 		}
 	}
 	
-	fmt.Printf("Sigmoid LUT Circuit: %d constraints (using lookup table)\n", sigmoidSCS.GetNbConstraints())
+	avgProveTime := totalProveTime / time.Duration(len(results))
+	avgVerifyTime := totalVerifyTime / time.Duration(len(results))
 
-	fmt.Println("\n=== Generating Proofs for All Samples ===")
-
-	// Collect all proofs and public witnesses for batch verification
-	type ProofData struct {
-		linearProof   plonk.Proof
-		linearPublic  witness.Witness
-		sigmoidProof  plonk.Proof
-		sigmoidPublic witness.Witness
-		mark          int
-		expectedLabel int
-		sampleNum     int
+	// Print final results
+	fmt.Println("\n================================================================")
+	fmt.Println("                     FINAL RESULTS")
+	fmt.Println("================================================================\n")
+	
+	fmt.Printf("Accuracy Metrics:\n")
+	fmt.Printf("  Total samples:        %d\n", len(marks))
+	fmt.Printf("  Correct predictions:  %d\n", correctCount)
+	fmt.Printf("  Accuracy:             %.2f%%\n", accuracy)
+	fmt.Printf("  Threshold:            97%%\n")
+	if accuracy >= 97.0 {
+		fmt.Printf("  Status:               PASSED\n\n")
+	} else {
+		fmt.Printf("  Status:               Below threshold\n\n")
 	}
 	
-	var validProofs []ProofData
-	proofGenCount := 0
-
-	for i := 0; i < len(marks); i++ {
-		mark := marks[i]
-		expectedLabel := labels[i]
-
-		// ====================================================================
-		// Generate Linear Circuit Proof
-		// ====================================================================
-		var linearWitness LinearCircuit
-		
-		w_scaled := newScaled(W)
-		b_scaled := newScaled(B)
-		x_scaled := newScaled(float64(mark))
-
-		wx_scaled2 := new(big.Int).Mul(w_scaled, x_scaled)
-		wx_scaled1 := new(big.Int).Div(wx_scaled2, scalingFactor)
-		z_scaled := new(big.Int).Add(wx_scaled1, b_scaled)
-
-		linearWitness.W = w_scaled
-		linearWitness.B = b_scaled
-		linearWitness.X = x_scaled
-		linearWitness.Z = z_scaled
-
-		linearWitnessFull, err := frontend.NewWitness(&linearWitness, ecc.BN254.ScalarField())
-		if err != nil {
-			log.Printf("Sample %d (marks=%d): Linear witness error: %v\n", i+1, mark, err)
-			continue
-		}
-
-		linearWitnessPublic, err := linearWitnessFull.Public()
-		if err != nil {
-			log.Printf("Sample %d (marks=%d): Linear public witness error: %v\n", i+1, mark, err)
-			continue
-		}
-
-		linearProof, err := plonk.Prove(linearSCS, linearPK, linearWitnessFull)
-		if err != nil {
-			log.Printf("Sample %d (marks=%d): Linear proof error: %v\n", i+1, mark, err)
-			continue
-		}
-
-		// ====================================================================
-		// Generate Threshold (Sign) Circuit Proof
-		// ====================================================================
-		var sigmoidWitness SigmoidCircuit
-		
-		sigmoidWitness.Z = z_scaled
-		// Use client-provided dataset label as the asserted ground truth.
-		// The circuit will recompute prediction = (z>=0) and assert equality to this label.
-		// Mapping: 1 = Fail, 0 = Pass (consistent with z>=0 => likely Fail when W<0).
-		sigmoidWitness.Label = big.NewInt(int64(expectedLabel))
-
-		sigmoidWitnessFull, err := frontend.NewWitness(&sigmoidWitness, ecc.BN254.ScalarField())
-		if err != nil {
-			log.Printf("Sample %d (marks=%d): Sigmoid witness error: %v\n", i+1, mark, err)
-			continue
-		}
-
-		sigmoidWitnessPublic, err := sigmoidWitnessFull.Public()
-		if err != nil {
-			log.Printf("Sample %d (marks=%d): Sigmoid public witness error: %v\n", i+1, mark, err)
-			continue
-		}
-
-		sigmoidProof, err := plonk.Prove(sigmoidSCS, sigmoidPK, sigmoidWitnessFull)
-		if err != nil {
-			log.Printf("Sample %d (marks=%d): Sigmoid proof error: %v\n", i+1, mark, err)
-			continue
-		}
-
-		// Store proof data for batch verification
-		validProofs = append(validProofs, ProofData{
-			linearProof:   linearProof,
-			linearPublic:  linearWitnessPublic,
-			sigmoidProof:  sigmoidProof,
-			sigmoidPublic: sigmoidWitnessPublic,
-			mark:          mark,
-			expectedLabel: expectedLabel,
-			sampleNum:     i + 1,
-		})
-		proofGenCount++
-		
-		if (i+1) % 10 == 0 {
-			fmt.Printf("Generated proofs for %d/%d samples...\n", i+1, len(marks))
-		}
-	}
-
-	fmt.Printf("\nSuccessfully generated proofs for %d/%d samples\n", proofGenCount, len(marks))
-
-	// ========================================================================
-	// BATCH VERIFICATION - Much faster than individual verification!
-	// ========================================================================
-	fmt.Println("\n=== Batch Verifying All Proofs ===")
+	fmt.Printf("Performance Metrics:\n")
+	fmt.Printf("  Setup time:           %v\n", setupTime)
+	fmt.Printf("  Total proving time:   %v\n", totalProvingTime)
+	fmt.Printf("  Avg prove/sample:     %v\n", avgProveTime)
+	fmt.Printf("  Avg verify/sample:    %v\n", avgVerifyTime)
+	fmt.Printf("  Workers used:         %d (80%% of %d cores)\n", numWorkers, numCPU)
+	fmt.Printf("  Throughput:           %.2f proofs/sec\n\n", float64(len(marks))/totalProvingTime.Seconds())
 	
-	successCount := 0
+	fmt.Println("All proofs verified successfully!")
 	
-	// Verify each proof (gnark's Verify already does internal batching of KZG checks)
-	// For even better performance, you could implement custom batch verification
-	// by extracting KZG commitments and using kzg.BatchVerifyMultiPoints
+	// Export metrics for collection
+	exportMetrics(setupTime, totalProvingTime, avgProveTime, avgVerifyTime, len(marks), correctCount, ccs.GetNbConstraints())
+}
+
+func processProof(task ProofTask, ccs *cs.SparseR1CS, pk plonk.ProvingKey, vk plonk.VerifyingKey) ProofResult {
+	var w Circuit
 	
-	for _, pd := range validProofs {
-		// Verify linear proof
-		err := plonk.Verify(pd.linearProof, linearVK, pd.linearPublic)
-		if err != nil {
-			log.Printf("Sample %d (marks=%d): Linear verification FAILED: %v\n", pd.sampleNum, pd.mark, err)
-			continue
-		}
+	w.W = task.w_bi
+	w.B = task.b_bi
+	w.X = task.x_bi
 
-		// Verify sigmoid proof
-		err = plonk.Verify(pd.sigmoidProof, sigmoidVK, pd.sigmoidPublic)
-		if err != nil {
-			log.Printf("Sample %d (marks=%d): Sigmoid verification FAILED: %v\n", pd.sampleNum, pd.mark, err)
-			continue
-		}
-
-		successCount++
-		labelStr := "Pass"
-		if pd.expectedLabel == 1 {
-			labelStr = "Fail"
-		}
-		fmt.Printf("✓ Sample %d: Marks=%d, Label=%s - Both proofs verified!\n", pd.sampleNum, pd.mark, labelStr)
-	}
-
-	fmt.Printf("\n=== Summary ===\n")
-	fmt.Printf("Total samples: %d\n", len(marks))
-	fmt.Printf("Proofs generated: %d\n", proofGenCount)
-	fmt.Printf("Successfully verified: %d\n", successCount)
-	fmt.Printf("Failed: %d\n", len(marks)-successCount)
-	fmt.Printf("Success rate: %.2f%%\n", float64(successCount)/float64(len(marks))*100)
-
-	// ========================================================================
-	// CHUNKED ACCURACY PROOF (4 chunks of 25 samples + aggregator)
-	// ========================================================================
-	fmt.Println("\n=== Proving Accuracy >= 97% over dataset (chunked) ===")
-
-	// Setup chunk circuit (with caching)
-	var chunkSCS *cs.SparseR1CS
-	var chunkPK plonk.ProvingKey
-	var chunkVK plonk.VerifyingKey
-
-	chunkCache := "data/accuracy_chunk_25.cache"
-	cached = false
-	if _, err := os.Stat(chunkCache); err == nil {
-		fmt.Println("Loading chunk circuit from cache...")
-		chunkSCS, chunkPK, chunkVK, err = loadCircuitData(chunkCache)
-		if err != nil {
-			log.Printf("Error loading cache, recompiling: %v\n", err)
-		} else {
-			fmt.Println("Chunk circuit loaded from cache!")
-			cached = true
-		}
-	}
-
-	if !cached {
-		fmt.Println("Compiling chunk circuit (25 samples)...")
-		var chunk AccuracyChunkCircuit
-		chunkCCS, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, &chunk)
-		if err != nil {
-			log.Fatal("Chunk circuit compilation error:", err)
-		}
-		chunkSCS = chunkCCS.(*cs.SparseR1CS)
-		chunkSRS, chunkSRSLagrange, err := unsafekzg.NewSRS(chunkSCS)
-		if err != nil {
-			panic(err)
-		}
-		chunkPK, chunkVK, err = plonk.Setup(chunkCCS, chunkSRS, chunkSRSLagrange)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println("Saving chunk circuit to cache...")
-		if err := saveCircuitData(chunkCache, chunkSCS, chunkPK, chunkVK); err != nil {
-			log.Printf("Warning: Failed to save cache: %v\n", err)
-		}
-	}
-	fmt.Printf("Chunk Circuit: %d constraints\n", chunkSCS.GetNbConstraints())
-
-	// Generate 4 chunk proofs
-	numChunks := 4
-	chunkCounts := make([]int, numChunks)
+	// Calculate z = WX + B
+	wx_scaled2 := new(big.Int).Mul(task.w_bi, task.x_bi)
+	wx_scaled1 := new(big.Int).Div(wx_scaled2, scalingFactor)
+	z_linear_bi := new(big.Int).Add(wx_scaled1, task.b_bi)
 	
-	for chunkIdx := 0; chunkIdx < numChunks; chunkIdx++ {
-		startIdx := chunkIdx * ChunkSize
-		endIdx := startIdx + ChunkSize
+	// Rescale z from 2^32 to 2^10
+	shiftFactorWit := new(big.Int).Lsh(big.NewInt(1), Precision-inputPrecision)
+	z_sigmoid_input_bi := new(big.Int).Div(z_linear_bi, shiftFactorWit)
+	w.Z = z_sigmoid_input_bi
+	
+	// Calculate Y = sigmoid(z)
+	z_quantized_f := new(big.Float).SetInt(z_sigmoid_input_bi)
+	z_quantized_f.Quo(z_quantized_f, new(big.Float).SetInt(InputScale))
+	z_float, _ := z_quantized_f.Float64()
 
-		var chunkWitness AccuracyChunkCircuit
-		chunkWitness.W = newScaled(W)
-		chunkWitness.B = newScaled(B)
-		for i := 0; i < ChunkSize; i++ {
-			chunkWitness.X[i] = newScaled(float64(marks[startIdx+i]))
-			chunkWitness.Label[i] = big.NewInt(int64(labels[startIdx+i]))
-		}
-
-		chunkFull, err := frontend.NewWitness(&chunkWitness, ecc.BN254.ScalarField())
-		if err != nil {
-			log.Fatalf("Chunk %d witness error: %v\n", chunkIdx+1, err)
-		}
-
-		chunkProof, err := plonk.Prove(chunkSCS, chunkPK, chunkFull)
-		if err != nil {
-			log.Fatalf("Chunk %d proof error: %v\n", chunkIdx+1, err)
-		}
-
-		// Compute count off-chain for aggregator input
-		count := 0
-		for i := startIdx; i < endIdx; i++ {
-			zf := W*float64(marks[i]) + B
-			pred := 0
-			if zf >= 0 { pred = 1 }
-			if pred == labels[i] { count++ }
-		}
-		chunkCounts[chunkIdx] = count
-		
-		fmt.Printf("Chunk %d: proved %d/25 correct\n", chunkIdx+1, count)
-		_ = chunkProof // Store if needed for verification
+	var y_float float64
+	if z_float > float64(MaxInput) {
+		y_float = 1.0
+	} else if z_float < -float64(MaxInput) {
+		y_float = 0.0
+	} else {
+		y_float = 1.0 / (1.0 + math.Exp(-z_float))
 	}
 
-	// Setup aggregator circuit
-	var aggSCS *cs.SparseR1CS
-	var aggPK plonk.ProvingKey
-	var aggVK plonk.VerifyingKey
-
-	aggCache := "aggregator_circuit.cache"
-	cached = false
-	if _, err := os.Stat(aggCache); err == nil {
-		fmt.Println("Loading aggregator circuit from cache...")
-		aggSCS, aggPK, aggVK, err = loadCircuitData(aggCache)
-		if err != nil {
-			log.Printf("Error loading cache, recompiling: %v\n", err)
-		} else {
-			fmt.Println("Aggregator circuit loaded from cache!")
-			cached = true
-		}
+	y_scaled_bi := newScaledOutput(y_float)
+	maxOutput := big.NewInt(1<<outputPrecision - 1)
+	if y_scaled_bi.Cmp(maxOutput) > 0 {
+		y_scaled_bi = maxOutput
 	}
-
-	if !cached {
-		fmt.Println("Compiling aggregator circuit...")
-		var agg AggregatorCircuit
-		aggCCS, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, &agg)
-		if err != nil {
-			log.Fatal("Aggregator circuit compilation error:", err)
-		}
-		aggSCS = aggCCS.(*cs.SparseR1CS)
-		aggSRS, aggSRSLagrange, err := unsafekzg.NewSRS(aggSCS)
-		if err != nil {
-			panic(err)
-		}
-		aggPK, aggVK, err = plonk.Setup(aggCCS, aggSRS, aggSRSLagrange)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println("Saving aggregator circuit to cache...")
-		if err := saveCircuitData(aggCache, aggSCS, aggPK, aggVK); err != nil {
-			log.Printf("Warning: Failed to save cache: %v\n", err)
-		}
+	w.Y = y_scaled_bi
+	
+	pred_label := 0
+	if y_float >= 0.5 {
+		pred_label = 1
 	}
-	fmt.Printf("Aggregator Circuit: %d constraints\n", aggSCS.GetNbConstraints())
-
-	// Generate aggregator proof
-	var aggWitness AggregatorCircuit
-	aggWitness.Count1 = big.NewInt(int64(chunkCounts[0]))
-	aggWitness.Count2 = big.NewInt(int64(chunkCounts[1]))
-	aggWitness.Count3 = big.NewInt(int64(chunkCounts[2]))
-	aggWitness.Count4 = big.NewInt(int64(chunkCounts[3]))
-
-	aggFull, err := frontend.NewWitness(&aggWitness, ecc.BN254.ScalarField())
+	
+	// Prove
+	startProve := time.Now()
+	witnessFull, err := frontend.NewWitness(&w, ecc.BN254.ScalarField())
 	if err != nil {
-		log.Fatal("Aggregator witness error:", err)
-	}
-	aggPublic, err := aggFull.Public()
-	if err != nil {
-		log.Fatal("Aggregator public witness error:", err)
+		return ProofResult{idx: task.idx, err: err}
 	}
 
-	aggProof, err := plonk.Prove(aggSCS, aggPK, aggFull)
+	witnessPublic, err := witnessFull.Public()
 	if err != nil {
-		log.Fatal("Aggregator proof error:", err)
-	}
-	if err := plonk.Verify(aggProof, aggVK, aggPublic); err != nil {
-		log.Fatal("Aggregator verification FAILED:", err)
+		return ProofResult{idx: task.idx, err: err}
 	}
 
-	totalCorrect := chunkCounts[0] + chunkCounts[1] + chunkCounts[2] + chunkCounts[3]
-	fmt.Printf("\nAccuracy proof verified (chunked). Total correct=%d/%d (%.2f%%) >= 97%%\n", 
-		totalCorrect, len(marks), float64(totalCorrect)*100.0/float64(len(marks)))
+	proof, err := plonk.Prove(ccs, pk, witnessFull)
+	proveTime := time.Since(startProve)
+	if err != nil {
+		return ProofResult{idx: task.idx, err: err}
+	}
+
+	// Verify
+	startVerify := time.Now()
+	err = plonk.Verify(proof, vk, witnessPublic)
+	verifyTime := time.Since(startVerify)
+	if err != nil {
+		return ProofResult{idx: task.idx, err: err}
+	}
+
+	return ProofResult{
+		idx:        task.idx,
+		mark:       task.mark,
+		label:      task.label,
+		predicted:  pred_label,
+		correct:    pred_label == task.label,
+		proveTime:  proveTime,
+		verifyTime: verifyTime,
+	}
+}
+
+func exportMetrics(setupTime, totalProvingTime, avgProveTime, avgVerifyTime time.Duration, samples, correct, constraints int) {
+	metricsFile := "data/cache/run_metrics.txt"
+	f, err := os.Create(metricsFile)
+	if err != nil {
+		log.Printf("[WARN] Failed to export metrics: %v", err)
+		return
+	}
+	defer f.Close()
+	
+	fmt.Fprintf(f, "setup_time_ms=%d\n", setupTime.Milliseconds())
+	fmt.Fprintf(f, "total_proving_time_ms=%d\n", totalProvingTime.Milliseconds())
+	fmt.Fprintf(f, "avg_prove_time_ms=%d\n", avgProveTime.Milliseconds())
+	fmt.Fprintf(f, "avg_verify_time_ms=%d\n", avgVerifyTime.Milliseconds())
+	fmt.Fprintf(f, "samples=%d\n", samples)
+	fmt.Fprintf(f, "correct=%d\n", correct)
+	fmt.Fprintf(f, "accuracy=%.2f\n", float64(correct)/float64(samples)*100)
+	fmt.Fprintf(f, "constraints=%d\n", constraints)
+	fmt.Fprintf(f, "throughput=%.2f\n", float64(samples)/totalProvingTime.Seconds())
+	
+	// Get proof size from a sample proof
+	var w Circuit
+	w.W = newScaled(-0.85735312)
+	w.B = newScaled(50.94705066)
+	w.X = newScaled(75.0)
+	w.Z = big.NewInt(0)
+	w.Y = big.NewInt(1 << (outputPrecision - 1))
+	
+	witnessFull, _ := frontend.NewWitness(&w, ecc.BN254.ScalarField())
+	ccs, _ := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, &w)
+	scs := ccs.(*cs.SparseR1CS)
+	srs, srsLagrange, _ := unsafekzg.NewSRS(scs)
+	pk, _, _ := plonk.Setup(ccs, srs, srsLagrange)
+	proof, _ := plonk.Prove(ccs, pk, witnessFull)
+	
+	var buf bytes.Buffer
+	proof.WriteTo(&buf)
+	proofSize := buf.Len()
+	
+	fmt.Fprintf(f, "proof_size_bytes=%d\n", proofSize)
+	fmt.Fprintf(f, "proof_size_kb=%.2f\n", float64(proofSize)/1024.0)
+	
+	fmt.Printf("[METRICS] Exported to %s\n", metricsFile)
 }

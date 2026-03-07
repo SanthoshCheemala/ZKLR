@@ -1,0 +1,14 @@
+# ZK-LR BMI Model Weights (v3 — 2-feature)
+# Features: height_cm (int), weight_kg x10 (int)
+# Label: 1=overweight (BMI>=25), 0=normal
+# Trained on 3000 samples | Test accuracy: 100.00%
+
+# Float values
+w1 = -3.3144933046   # height coefficient
+w2 = 0.3877500778    # weight coefficient
+b  = 281.2861173099   # bias
+
+# Pre-scaled for Go ZK circuit (x 2^32)
+W1_SCALED = -14235640345
+W2_SCALED = 1665373903
+B_SCALED  = 1208114674664

@@ -1,7 +1,11 @@
 # Generated/ignored files for ZKLR
 
-# Documentation and backups (kept out of VCS)
-documentation/
+# Compiled binaries
+zkproof
+zkproof_batched
+security_demo
+
+# Documentation backups
 backup/
 
 # Circuit cache files (large binaries)
@@ -33,3 +37,4 @@ __pycache__/
 # Logs and temp
 *.log
 *.tmp
+

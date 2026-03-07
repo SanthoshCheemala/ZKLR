@@ -228,6 +228,47 @@ func TestBatchPredict(t *testing.T) {
 	}
 }
 
+// ─── Test: Compare One Input vs Two Inputs ───────────────────
+
+// TestCompareOneVsTwoInputs compares predictions made with a single feature
+// (height only, W2=0) against predictions made with two features (height +
+// weight). It logs a side-by-side table so the impact of the second feature
+// can be inspected.
+func TestCompareOneVsTwoInputs(t *testing.T) {
+	samples := [][2]int{
+		{150, 400},
+		{160, 600},
+		{165, 700},
+		{170, 750},
+		{175, 850},
+		{180, 950},
+		{185, 1000},
+		{190, 600},
+	}
+
+	t.Log("─────────────────────────────────────────────────────────────────────")
+	t.Log("h    w     | one-input prob  pred      | two-input prob  pred")
+	t.Log("─────────────────────────────────────────────────────────────────────")
+
+	for _, s := range samples {
+		h, w := s[0], s[1]
+
+		// One-input model: only height feature, W2 = 0
+		oneInput := ComputeWitness(testW1, 0, testB, h, w)
+		oneProb := GetProbability(oneInput)
+		onePred := GetPrediction(oneInput)
+
+		// Two-input model: height + weight features
+		twoInput := ComputeWitness(testW1, testW2, testB, h, w)
+		twoProb := GetProbability(twoInput)
+		twoPred := GetPrediction(twoInput)
+
+		t.Logf("h=%3d w=%4d | one: %.4f %-10s | two: %.4f %-10s",
+			h, w, oneProb, onePred, twoProb, twoPred)
+	}
+	t.Log("─────────────────────────────────────────────────────────────────────")
+}
+
 // ─── Test: Multiple Marks ────────────────────────────────────
 
 func TestMultipleFeatures(t *testing.T) {

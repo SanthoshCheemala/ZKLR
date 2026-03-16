@@ -1,18 +1,18 @@
 ZK-LR Circuit Metrics Report
-Generated: 2026-03-16T23:22:10+05:30
+Generated: 2026-03-17T00:21:50+05:30
 Curve: BN254
 Backend: PLONK
 
 Constraints:      114219
 Variables:        113599
-Compile time:     66.090959ms
-Setup time:       3.08494725s
-Prove time:       1.903889041s
-Verify time:      1.6675ms
+Compile time:     71.199916ms
+Setup time:       6.962225416s
+Prove time:       5.004706667s
+Verify time:      4.153875ms
 Proof size:       584 bytes
 Proving key:      8423080 bytes (8225.7 KB)
 Verification key: 34368 bytes (33.6 KB)
 
 Efficiency Ratios:
-  Prove/Verify ratio:  1142x
-  Prove/constraint:    16.67 µs
+  Prove/Verify ratio:  1205x
+  Prove/constraint:    43.82 µs

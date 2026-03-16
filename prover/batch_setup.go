@@ -31,11 +31,11 @@ type BatchSetupResult struct {
 }
 
 // RunBatchSetup compiles the batch circuit and generates keys.
-func RunBatchSetup(batchSize int) (*BatchSetupResult, error) {
+func RunBatchSetup(batchSize int, numFeatures int) (*BatchSetupResult, error) {
 	result := &BatchSetupResult{BatchSize: batchSize}
 
 	start := time.Now()
-	c := circuit.NewBatchCircuit(batchSize)
+	c := circuit.NewBatchCircuit(batchSize, numFeatures)
 	ccs, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, c)
 	if err != nil {
 		return nil, fmt.Errorf("batch compile failed: %w", err)

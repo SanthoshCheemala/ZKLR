@@ -24,7 +24,7 @@ const (
 // ─── Test: Full Setup Pipeline ───────────────────────────────
 
 func TestSetupFull(t *testing.T) {
-	result, err := RunSetup()
+	result, err := RunSetup(2)
 	if err != nil {
 		t.Fatalf("Setup failed: %v", err)
 	}
@@ -32,7 +32,7 @@ func TestSetupFull(t *testing.T) {
 	t.Logf("PK: %.1f KB, VK: %.1f KB", float64(result.PKSizeBytes)/1024, float64(result.VKSizeBytes)/1024)
 
 	// Verify with a proof
-	assignment := ComputeWitness(testW1, testW2, testB, 170, 70)
+	assignment := ComputeWitness([]float64{testW1, testW2}, testB, []int{170, 70})
 	witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	proof, err := plonk.Prove(result.ConstraintSystem, result.ProvingKey, witness)
 	if err != nil {
@@ -48,7 +48,7 @@ func TestSetupFull(t *testing.T) {
 // ─── Test: Key Serialization ─────────────────────────────────
 
 func TestKeySerialization(t *testing.T) {
-	result, err := RunSetup()
+	result, err := RunSetup(2)
 	if err != nil {
 		t.Fatalf("Setup failed: %v", err)
 	}
@@ -78,7 +78,7 @@ func TestKeySerialization(t *testing.T) {
 	}
 
 	// Prove with loaded keys
-	assignment := ComputeWitness(testW1, testW2, testB, 160, 60)
+	assignment := ComputeWitness([]float64{testW1, testW2}, testB, []int{160, 60})
 	witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	proof, err := plonk.Prove(result.ConstraintSystem, pkLoaded, witness)
 	if err != nil {
@@ -106,7 +106,7 @@ func TestComputeWitness(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		assignment := ComputeWitness(testW1, testW2, testB, tc.height, tc.weight)
+		assignment := ComputeWitness([]float64{testW1, testW2}, testB, []int{tc.height, tc.weight})
 		prob := GetProbability(assignment)
 		pred := GetPrediction(assignment)
 		isPass := pred == "OVERWEIGHT"
@@ -122,12 +122,12 @@ func TestComputeWitness(t *testing.T) {
 // ─── Test: Predict Pipeline ──────────────────────────────────
 
 func TestPredict(t *testing.T) {
-	setup, err := RunSetup()
+	setup, err := RunSetup(2)
 	if err != nil {
 		t.Fatalf("Setup failed: %v", err)
 	}
 
-	result, err := Predict(setup, testW1, testW2, testB, 160, 850)
+	result, err := Predict(setup, []float64{testW1, testW2}, testB, []int{160, 850})
 	if err != nil {
 		t.Fatalf("Predict failed: %v", err)
 	}
@@ -145,12 +145,12 @@ func TestPredict(t *testing.T) {
 // ─── Test: Verifier Only ─────────────────────────────────────
 
 func TestVerifierOnly(t *testing.T) {
-	setup, err := RunSetup()
+	setup, err := RunSetup(2)
 	if err != nil {
 		t.Fatalf("Setup failed: %v", err)
 	}
 
-	assignment := ComputeWitness(testW1, testW2, testB, 175, 750)
+	assignment := ComputeWitness([]float64{testW1, testW2}, testB, []int{175, 750})
 	witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	proof, err := plonk.Prove(setup.ConstraintSystem, setup.ProvingKey, witness)
 	if err != nil {
@@ -204,14 +204,14 @@ func TestSigmoidTable(t *testing.T) {
 // ─── Test: Batch Predict ─────────────────────────────────────
 
 func TestBatchPredict(t *testing.T) {
-	setup, err := RunBatchSetup(5)
+	setup, err := RunBatchSetup(5, 2)
 	if err != nil {
 		t.Fatalf("Batch setup failed: %v", err)
 	}
 	t.Logf("Batch circuit: %d constraints (batch=5)", setup.NumConstraints)
 
-	features := [][2]int{{150, 400}, {160, 500}, {170, 700}, {180, 900}, {190, 1000}}
-	results := BatchPredictParallel(setup, testW1, testW2, testB, features, 2)
+	features := [][]int{{150, 400}, {160, 500}, {170, 700}, {180, 900}, {190, 1000}}
+	results := BatchPredictParallel(setup, []float64{testW1, testW2}, testB, features, 2)
 
 	for _, br := range results {
 		if br.Error != nil {
@@ -254,12 +254,12 @@ func TestCompareOneVsTwoInputs(t *testing.T) {
 		h, w := s[0], s[1]
 
 		// One-input model: only height feature, W2 = 0
-		oneInput := ComputeWitness(testW1, 0, testB, h, w)
+		oneInput := ComputeWitness([]float64{testW1, 0}, testB, []int{h, w})
 		oneProb := GetProbability(oneInput)
 		onePred := GetPrediction(oneInput)
 
 		// Two-input model: height + weight features
-		twoInput := ComputeWitness(testW1, testW2, testB, h, w)
+		twoInput := ComputeWitness([]float64{testW1, testW2}, testB, []int{h, w})
 		twoProb := GetProbability(twoInput)
 		twoPred := GetPrediction(twoInput)
 
@@ -272,7 +272,7 @@ func TestCompareOneVsTwoInputs(t *testing.T) {
 // ─── Test: Multiple Marks ────────────────────────────────────
 
 func TestMultipleFeatures(t *testing.T) {
-	setup, err := RunSetup()
+	setup, err := RunSetup(2)
 	if err != nil {
 		t.Fatalf("Setup failed: %v", err)
 	}
@@ -280,7 +280,7 @@ func TestMultipleFeatures(t *testing.T) {
 	featuresList := [][2]int{{150, 400}, {160, 500}, {170, 600}, {170, 750}, {180, 800}, {185, 950}}
 
 	for _, f := range featuresList {
-		assignment := ComputeWitness(testW1, testW2, testB, f[0], f[1])
+		assignment := ComputeWitness([]float64{testW1, testW2}, testB, []int{f[0], f[1]})
 		witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 		if err != nil {
 			t.Errorf("h=%d, w=%d: witness failed: %v", f[0], f[1], err)

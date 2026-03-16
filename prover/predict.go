@@ -32,20 +32,28 @@ type PredictionResult struct {
 
 // ─── Witness Computation ─────────────────────────────────────
 
-// ComputeWitness calculates all circuit inputs for given model weights and 2 features.
-func ComputeWitness(w1Float, w2Float, bFloat float64, height, weight int) *circuit.LRCircuit {
+// ComputeWitness calculates all circuit inputs for given model weights and N features.
+func ComputeWitness(wFloat []float64, bFloat float64, features []int) *circuit.LRCircuit {
+	if len(wFloat) != len(features) {
+		panic("model weights and features length mismatch")
+	}
 	scale := new(big.Int).Set(circuit.ScalingFactor)
 
-	w1Big := new(big.Int).SetInt64(int64(w1Float * float64(scale.Int64())))
-	w2Big := new(big.Int).SetInt64(int64(w2Float * float64(scale.Int64())))
-	bBig := new(big.Int).SetInt64(int64(bFloat * float64(scale.Int64())))
+	wBig := make([]frontend.Variable, len(wFloat))
+	xBig := make([]frontend.Variable, len(features))
 	
-	x1Big := big.NewInt(int64(height))
-	x2Big := big.NewInt(int64(weight))
+	for i := 0; i < len(wFloat); i++ {
+		wBig[i] = new(big.Int).SetInt64(int64(wFloat[i] * float64(scale.Int64())))
+		xBig[i] = big.NewInt(int64(features[i]))
+	}
 
-	w1x1 := new(big.Int).Mul(w1Big, x1Big)
-	w2x2 := new(big.Int).Mul(w2Big, x2Big)
-	wx := new(big.Int).Add(w1x1, w2x2)
+	bBig := new(big.Int).SetInt64(int64(bFloat * float64(scale.Int64())))
+
+	wx := big.NewInt(0)
+	for i := 0; i < len(wFloat); i++ {
+		wixi := new(big.Int).Mul(wBig[i].(*big.Int), xBig[i].(*big.Int))
+		wx.Add(wx, wixi)
+	}
 	zLinear := new(big.Int).Add(wx, bBig)
 
 	offsetScaled := new(big.Int).Lsh(big.NewInt(circuit.ModelOffset), circuit.Precision)
@@ -78,8 +86,8 @@ func ComputeWitness(w1Float, w2Float, bFloat float64, height, weight int) *circu
 	}
 
 	return &circuit.LRCircuit{
-		W: [2]frontend.Variable{w1Big, w2Big}, B: bBig,
-		X: [2]frontend.Variable{x1Big, x2Big}, ZTable: zTable, Rem: rem, Y: yBig,
+		W: wBig, B: bBig,
+		X: xBig, ZTable: zTable, Rem: rem, Y: yBig,
 	}
 }
 
@@ -140,19 +148,23 @@ func Verify(vk plonk.VerifyingKey, proof plonk.Proof, assignment *circuit.LRCirc
 // ─── Full Prediction Pipeline ────────────────────────────────
 
 // Predict runs the full ZK prediction pipeline for a single sample.
-func Predict(setup *SetupResult, w1Float, w2Float, bFloat float64, height, weight int) (*PredictionResult, error) {
-	assignment := ComputeWitness(w1Float, w2Float, bFloat, height, weight)
+func Predict(setup *SetupResult, wFloat []float64, bFloat float64, features []int) (*PredictionResult, error) {
+	assignment := ComputeWitness(wFloat, bFloat, features)
 
+	h, w := 0, 0
+	if len(features) > 0 { h = features[0] }
+	if len(features) > 1 { w = features[1] }
+	
 	result := &PredictionResult{
-		Height:      height,
-		Weight:      weight,
+		Height:      h,
+		Weight:      w,
 		Probability: GetProbability(assignment),
 		Prediction:  GetPrediction(assignment),
 	}
 
 	proof, proveTime, err := Prove(setup.ConstraintSystem, setup.ProvingKey, assignment)
 	if err != nil {
-		return nil, fmt.Errorf("h=%d, w=%d: prove failed: %w", height, weight, err)
+		return nil, fmt.Errorf("h=%d, w=%d: prove failed: %w", h, w, err)
 	}
 	result.ProveTime = proveTime
 
@@ -165,7 +177,7 @@ func Predict(setup *SetupResult, w1Float, w2Float, bFloat float64, height, weigh
 	result.Verified = (err == nil)
 
 	if err != nil {
-		return result, fmt.Errorf("h=%d, w=%d: verify failed: %w", height, weight, err)
+		return result, fmt.Errorf("h=%d, w=%d: verify failed: %w", h, w, err)
 	}
 
 	return result, nil

@@ -20,18 +20,27 @@ import (
 	"github.com/santhoshcheemala/ZKLR/prover"
 )
 
-const (
-	W1_FLOAT = -3.3144933046
-	W2_FLOAT = 0.3877500778
-	B_FLOAT  = 281.2861173099
-)
 
 func main() {
 	// CLI flags
 	batchSize := flag.Int("batch", 20, "predictions per proof")
 	numWorkers := flag.Int("workers", 0, "parallel workers (0=auto)")
 	datasetPath := flag.String("dataset", "data/bmi_dataset_test.csv", "CSV file path")
+	weightsFlag := flag.String("weights", "-3.3144933046,0.3877500778", "comma-separated model weights")
+	biasFlag := flag.Float64("bias", 281.2861173099, "model bias")
 	flag.Parse()
+
+	weightStrs := strings.Split(*weightsFlag, ",")
+	weights := make([]float64, len(weightStrs))
+	for i, s := range weightStrs {
+		w, err := strconv.ParseFloat(strings.TrimSpace(s), 64)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Invalid weight value %q: %v\n", s, err)
+			os.Exit(1)
+		}
+		weights[i] = w
+	}
+	bias := *biasFlag
 
 	if *numWorkers == 0 {
 		*numWorkers = runtime.NumCPU()
@@ -50,7 +59,7 @@ func main() {
 	// ─── Phase 1: Setup ──────────────────────────────────
 	fmt.Println("\n[1] Batch Setup (compile → SRS → keys)...")
 	setupStart := time.Now()
-	setup, err := prover.RunBatchSetup(*batchSize)
+	setup, err := prover.RunBatchSetup(*batchSize, len(weights))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Setup failed: %v\n", err)
 		os.Exit(1)
@@ -78,15 +87,15 @@ func main() {
 	}
 	fmt.Printf("    Loaded %d samples\n", len(testData))
 
-	features := make([][2]int, len(testData))
+	features := make([][]int, len(testData))
 	for i, s := range testData {
-		features[i] = [2]int{s.height, s.weight}
+		features[i] = s.features
 	}
 
 	// ─── Phase 3: Parallel Batch Predictions ─────────────
 	fmt.Println("\n[3] Running batch parallel predictions...")
 	predStart := time.Now()
-	batchResults := prover.BatchPredictParallel(setup, W1_FLOAT, W2_FLOAT, B_FLOAT, features, *numWorkers)
+	batchResults := prover.BatchPredictParallel(setup, weights, bias, features, *numWorkers)
 	predTotal := time.Since(predStart)
 
 	// ─── Phase 4: Collect Results ────────────────────────
@@ -116,7 +125,10 @@ func main() {
 			totalSamples++
 			idx := 0
 			for di, d := range testData {
-				if d.height == p.Height && d.weight == p.Weight {
+				h, w := 0, 0
+				if len(d.features) > 0 { h = d.features[0] }
+				if len(d.features) > 1 { w = d.features[1] }
+				if h == p.Height && w == p.Weight {
 					idx = di
 					break
 				}
@@ -182,8 +194,7 @@ func main() {
 // ─── CSV Loading ─────────────────────────────────────────────
 
 type sample struct {
-	height int
-	weight int
+	features []int
 	label  int // 1 = overweight, 0 = normal
 }
 
@@ -204,13 +215,19 @@ func loadCSV(path string) ([]sample, error) {
 			continue
 		}
 		parts := strings.Split(line, ",")
-		if len(parts) < 3 {
+		if len(parts) < 2 {
 			continue
 		}
-		height, _ := strconv.Atoi(strings.TrimSpace(parts[0]))
-		weight, _ := strconv.Atoi(strings.TrimSpace(parts[1]))
-		label, _ := strconv.Atoi(strings.TrimSpace(parts[2]))
-		samples = append(samples, sample{height: height, weight: weight, label: label})
+		
+		lastIdx := len(parts) - 1
+		label, _ := strconv.Atoi(strings.TrimSpace(parts[lastIdx]))
+		
+		features := make([]int, lastIdx)
+		for j := 0; j < lastIdx; j++ {
+			features[j], _ = strconv.Atoi(strings.TrimSpace(parts[j]))
+		}
+		
+		samples = append(samples, sample{features: features, label: label})
 	}
 	return samples, scanner.Err()
 }

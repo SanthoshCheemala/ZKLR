@@ -28,31 +28,42 @@ type BatchPredResult struct {
 }
 
 // ComputeBatchWitness fills a BatchCircuit assignment for the given features.
-func ComputeBatchWitness(w1Float, w2Float, bFloat float64, features [][2]int, batchSize int) *circuit.BatchCircuit {
-	assignment := circuit.NewBatchCircuit(batchSize)
+func ComputeBatchWitness(wFloat []float64, bFloat float64, features [][]int, batchSize int) *circuit.BatchCircuit {
+	numFeatures := len(wFloat)
+	assignment := circuit.NewBatchCircuit(batchSize, numFeatures)
 
 	scale := circuit.ScalingFactor
-	w1Big := new(big.Int).SetInt64(int64(w1Float * float64(scale.Int64())))
-	w2Big := new(big.Int).SetInt64(int64(w2Float * float64(scale.Int64())))
+	
+	wBig := make([]frontend.Variable, numFeatures)
+	for i := range wFloat {
+		wBig[i] = new(big.Int).SetInt64(int64(wFloat[i] * float64(scale.Int64())))
+	}
+	
 	bBig := new(big.Int).SetInt64(int64(bFloat * float64(scale.Int64())))
-	assignment.W = [2]frontend.Variable{w1Big, w2Big}
+	assignment.W = wBig
 	assignment.B = bBig
 
+	// Setup dummy features for padding
+	dummyFeatures := make([]int, numFeatures)
+	for i := range dummyFeatures {
+		dummyFeatures[i] = 100 // Safe dummy value
+	}
+
 	for i := 0; i < batchSize; i++ {
+		var single *circuit.LRCircuit
 		if i < len(features) {
-			single := ComputeWitness(w1Float, w2Float, bFloat, features[i][0], features[i][1])
-			assignment.X[i] = [2]frontend.Variable{single.X[0], single.X[1]}
-			assignment.Y[i] = single.Y
-			assignment.ZTable[i] = single.ZTable
-			assignment.Rem[i] = single.Rem
+			single = ComputeWitness(wFloat, bFloat, features[i])
 		} else {
 			// Pad with dummy prediction
-			single := ComputeWitness(w1Float, w2Float, bFloat, 170, 700)
-			assignment.X[i] = [2]frontend.Variable{single.X[0], single.X[1]}
-			assignment.Y[i] = single.Y
-			assignment.ZTable[i] = single.ZTable
-			assignment.Rem[i] = single.Rem
+			single = ComputeWitness(wFloat, bFloat, dummyFeatures)
 		}
+		
+		for j := 0; j < numFeatures; j++ {
+			assignment.X[i][j] = single.X[j]
+		}
+		assignment.Y[i] = single.Y
+		assignment.ZTable[i] = single.ZTable
+		assignment.Rem[i] = single.Rem
 	}
 
 	return assignment
@@ -61,8 +72,8 @@ func ComputeBatchWitness(w1Float, w2Float, bFloat float64, features [][2]int, ba
 // BatchPredictParallel runs all predictions using batching + parallelism.
 func BatchPredictParallel(
 	setup *BatchSetupResult,
-	w1Float, w2Float, bFloat float64,
-	features [][2]int,
+	wFloat []float64, bFloat float64,
+	features [][]int,
 	numWorkers int,
 ) []*BatchPredResult {
 	batchSize := setup.BatchSize
@@ -75,7 +86,7 @@ func BatchPredictParallel(
 	}
 
 	// Split features into batches
-	var batches [][][2]int
+	var batches [][][]int
 	for i := 0; i < len(features); i += batchSize {
 		end := i + batchSize
 		if end > len(features) {
@@ -95,13 +106,13 @@ func BatchPredictParallel(
 		wg.Add(1)
 		sem <- struct{}{}
 
-		go func(idx int, batchFeatures [][2]int) {
+		go func(idx int, batchFeatures [][]int) {
 			defer wg.Done()
 			defer func() { <-sem }()
 
 			result := &BatchPredResult{BatchIndex: idx}
 
-			assignment := ComputeBatchWitness(w1Float, w2Float, bFloat, batchFeatures, batchSize)
+			assignment := ComputeBatchWitness(wFloat, bFloat, batchFeatures, batchSize)
 
 			// Build per-prediction results
 			for i, f := range batchFeatures {
@@ -110,9 +121,16 @@ func BatchPredictParallel(
 				if prob >= 0.5 {
 					pred = "OVERWEIGHT"
 				}
+				
+				// Grab first two features for log formatting if they exist, otherwise pad 0
+				h := 0
+				w := 0
+				if len(f) > 0 { h = f[0] }
+				if len(f) > 1 { w = f[1] }
+				
 				result.Predictions = append(result.Predictions, &PredictionResult{
-					Height:      f[0],
-					Weight:      f[1],
+					Height:      h,
+					Weight:      w,
 					Probability: prob,
 					Prediction:  pred,
 				})

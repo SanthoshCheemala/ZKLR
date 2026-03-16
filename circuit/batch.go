@@ -25,21 +25,26 @@ type BatchCircuit struct {
 	BatchSize int `gnark:"-"`
 
 	// Private inputs (model weights — same for all predictions)
-	W [2]frontend.Variable `gnark:",secret"`
-	B frontend.Variable    `gnark:",secret"`
+	W []frontend.Variable `gnark:",secret"`
+	B frontend.Variable   `gnark:",secret"`
 
 	// Per-prediction inputs
-	X      [][2]frontend.Variable `gnark:",public"`  // features for each student
+	X      [][]frontend.Variable `gnark:",public"` // features for each student
 	Y      []frontend.Variable `gnark:",public"`  // sigmoid output for each
 	ZTable []frontend.Variable `gnark:",secret"`  // lookup index for each
 	Rem    []frontend.Variable `gnark:",secret"`  // remainder for each
 }
 
 // NewBatchCircuit creates a BatchCircuit with allocated slices.
-func NewBatchCircuit(batchSize int) *BatchCircuit {
+func NewBatchCircuit(batchSize int, numFeatures int) *BatchCircuit {
+	xSlices := make([][]frontend.Variable, batchSize)
+	for i := range xSlices {
+		xSlices[i] = make([]frontend.Variable, numFeatures)
+	}
 	return &BatchCircuit{
 		BatchSize: batchSize,
-		X:         make([][2]frontend.Variable, batchSize),
+		W:         make([]frontend.Variable, numFeatures),
+		X:         xSlices,
 		Y:         make([]frontend.Variable, batchSize),
 		ZTable:    make([]frontend.Variable, batchSize),
 		Rem:       make([]frontend.Variable, batchSize),
@@ -61,13 +66,16 @@ func (c *BatchCircuit) Define(api frontend.API) error {
 	// ─── Apply constraints for each prediction ───
 	for i := 0; i < c.BatchSize; i++ {
 		// Range check X features
-		api.ToBinary(c.X[i][0], 8)
-		api.ToBinary(c.X[i][1], 12)
+		for j := 0; j < len(c.X[i]); j++ {
+			api.ToBinary(c.X[i][j], 12)
+		}
 
-		// z_shifted = W1*X1 + W2*X2 + B + offset
-		w1x1 := api.Mul(c.W[0], c.X[i][0])
-		w2x2 := api.Mul(c.W[1], c.X[i][1])
-		wx := api.Add(w1x1, w2x2)
+		// z_shifted = sum(W_j*X_j) + B + offset
+		wx := frontend.Variable(0)
+		for j := 0; j < len(c.X[i]); j++ {
+			term := api.Mul(c.W[j], c.X[i][j])
+			wx = api.Add(wx, term)
+		}
 		zLinear := api.Add(wx, c.B)
 		zShifted := api.Add(zLinear, offsetScaled)
 

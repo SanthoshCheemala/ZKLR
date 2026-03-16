@@ -47,16 +47,25 @@ var ScalingFactor = new(big.Int).Lsh(big.NewInt(1), Precision)           // 2^32
 //   - Y is the public sigmoid output (scaled by 2^16)
 type LRCircuit struct {
 	// Private inputs (model weights — kept secret)
-	W [2]frontend.Variable `gnark:",secret"` // Weights: W1 (height), W2 (weight)
-	B frontend.Variable    `gnark:",secret"`
+	W []frontend.Variable `gnark:",secret"` // Weights
+	B frontend.Variable   `gnark:",secret"`
 
 	// Auxiliary private inputs for truncation
 	ZTable frontend.Variable `gnark:",secret"` // z_shifted / 2^22
 	Rem    frontend.Variable `gnark:",secret"` // remainder
 
 	// Public inputs (visible to verifier)
-	X [2]frontend.Variable `gnark:",public"` // Features: X1 (height), X2 (weight)
-	Y frontend.Variable    `gnark:",public"` // sigmoid output (scaled by 2^16)
+	X []frontend.Variable `gnark:",public"` // Features
+	Y frontend.Variable   `gnark:",public"` // sigmoid output (scaled by 2^16)
+}
+
+// NewLRCircuit creates an empty circuit assignment for a given number of features.
+// This is required so gnark knows exactly how to size the slices during constraint generation.
+func NewLRCircuit(numFeatures int) *LRCircuit {
+	return &LRCircuit{
+		W: make([]frontend.Variable, numFeatures),
+		X: make([]frontend.Variable, numFeatures),
+	}
 }
 
 // Define builds the constraint system.
@@ -67,18 +76,20 @@ func (c *LRCircuit) Define(api frontend.API) error {
 	// ───────────────────────────────────────────────────
 	// Step 1: Range check X features
 	// ───────────────────────────────────────────────────
-	// X1 (Height): max ~250cm -> fits in 8 bits
-	api.ToBinary(c.X[0], 8)
-	// X2 (Weight*10): max ~2000 -> fits in 12 bits
-	api.ToBinary(c.X[1], 12)
+	// X features: typically fit in 12 bits
+	for i := 0; i < len(c.X); i++ {
+		api.ToBinary(c.X[i], 12)
+	}
 
 	// ───────────────────────────────────────────────────
-	// Step 2: Compute z_shifted = W1*X1 + W2*X2 + B + (10 * 2^32)
+	// Step 2: Compute z_shifted = sum(W_i * X_i) + B + (ModelOffset * 2^32)
 	// ───────────────────────────────────────────────────
 	// Since X is unscaled, W*X is naturally scaled by 2^32. No division needed!
-	w1x1 := api.Mul(c.W[0], c.X[0])
-	w2x2 := api.Mul(c.W[1], c.X[1])
-	wx := api.Add(w1x1, w2x2)
+	wx := frontend.Variable(0)
+	for i := 0; i < len(c.X); i++ {
+		term := api.Mul(c.W[i], c.X[i])
+		wx = api.Add(wx, term)
+	}
 	z_linear := api.Add(wx, c.B)
 	
 	// Add offset to make strictly positive. ModelOffset * 2^32:

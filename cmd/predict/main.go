@@ -10,6 +10,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -19,22 +20,33 @@ import (
 	"github.com/santhoshcheemala/ZKLR/prover"
 )
 
-// Model weights from data/bmi_model_weights.txt
-const (
-	W1_FLOAT = -3.3144933046
-	W2_FLOAT = 0.3877500778
-	B_FLOAT  = 281.2861173099
-)
 
 func main() {
 	fmt.Println("============================================================")
 	fmt.Println("  ZK Logistic Regression — Prediction Pipeline")
 	fmt.Println("============================================================")
 
+	datasetPath := flag.String("dataset", "data/bmi_dataset_test.csv", "CSV file path")
+	weightsFlag := flag.String("weights", "-3.3144933046,0.3877500778", "comma-separated model weights")
+	biasFlag := flag.Float64("bias", 281.2861173099, "model bias")
+	flag.Parse()
+
+	weightStrs := strings.Split(*weightsFlag, ",")
+	weights := make([]float64, len(weightStrs))
+	for i, s := range weightStrs {
+		w, err := strconv.ParseFloat(strings.TrimSpace(s), 64)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Invalid weight value %q: %v\n", s, err)
+			os.Exit(1)
+		}
+		weights[i] = w
+	}
+	bias := *biasFlag
+
 	// ─── Phase 1: Setup ──────────────────────────────────
 	fmt.Println("\n[1] Running ZK Setup (compile → SRS → keys)...")
 	setupStart := time.Now()
-	setup, err := prover.RunSetup()
+	setup, err := prover.RunSetup(len(weights))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Setup failed: %v\n", err)
 		os.Exit(1)
@@ -54,7 +66,7 @@ func main() {
 
 	// ─── Phase 2: Load Test Dataset ──────────────────────
 	fmt.Println("\n[2] Loading test dataset...")
-	testData, err := loadCSV("data/bmi_dataset_test.csv")
+	testData, err := loadCSV(*datasetPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to load test data: %v\n", err)
 		os.Exit(1)
@@ -75,9 +87,9 @@ func main() {
 	)
 
 	for i, sample := range testData {
-		result, err := prover.Predict(setup, W1_FLOAT, W2_FLOAT, B_FLOAT, sample.height, sample.weight)
+		result, err := prover.Predict(setup, weights, bias, sample.features)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "    Sample %d (h=%d, w=%d) failed: %v\n", i, sample.height, sample.weight, err)
+			fmt.Fprintf(os.Stderr, "    Sample %d failed: %v\n", i, err)
 			continue
 		}
 
@@ -100,8 +112,13 @@ func main() {
 			matchStr = "✗"
 		}
 
+		// Display first two features if available
+		f1, f2 := 0, 0
+		if len(sample.features) > 0 { f1 = sample.features[0] }
+		if len(sample.features) > 1 { f2 = sample.features[1] }
+
 		fmt.Printf("    │ %3d,%3d │ %8.4f   │ %-10s │ %-10s │ %6.2fs  │ %6.2fms │ %s\n",
-			sample.height, sample.weight,
+			f1, f2,
 			result.Probability,
 			result.Prediction,
 			actualLabel,
@@ -137,8 +154,7 @@ func main() {
 // ─── CSV Loading ─────────────────────────────────────────────
 
 type sample struct {
-	height int
-	weight int
+	features []int
 	label  int // 1 = overweight, 0 = normal
 }
 
@@ -159,13 +175,19 @@ func loadCSV(path string) ([]sample, error) {
 			continue // skip header
 		}
 		parts := strings.Split(line, ",")
-		if len(parts) < 3 {
+		if len(parts) < 2 {
 			continue
 		}
-		height, _ := strconv.Atoi(strings.TrimSpace(parts[0]))
-		weight, _ := strconv.Atoi(strings.TrimSpace(parts[1]))
-		label, _ := strconv.Atoi(strings.TrimSpace(parts[2]))
-		samples = append(samples, sample{height: height, weight: weight, label: label})
+		
+		lastIdx := len(parts) - 1
+		label, _ := strconv.Atoi(strings.TrimSpace(parts[lastIdx]))
+		
+		features := make([]int, lastIdx)
+		for j := 0; j < lastIdx; j++ {
+			features[j], _ = strconv.Atoi(strings.TrimSpace(parts[j]))
+		}
+		
+		samples = append(samples, sample{features: features, label: label})
 	}
 	return samples, scanner.Err()
 }

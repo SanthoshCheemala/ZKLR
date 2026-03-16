@@ -44,9 +44,9 @@ type SetupResult struct {
 // ─── Compile ─────────────────────────────────────────────────
 
 // CompileCircuit compiles the LRCircuit into a Sparse Constraint System.
-func CompileCircuit() (constraint.ConstraintSystem, time.Duration, error) {
+func CompileCircuit(numFeatures int) (constraint.ConstraintSystem, time.Duration, error) {
 	start := time.Now()
-	c := &circuit.LRCircuit{}
+	c := circuit.NewLRCircuit(numFeatures)
 	ccs, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, c)
 	elapsed := time.Since(start)
 	if err != nil {
@@ -75,10 +75,10 @@ func GenerateKeys(ccs constraint.ConstraintSystem) (plonk.ProvingKey, plonk.Veri
 // ─── Full Setup ──────────────────────────────────────────────
 
 // RunSetup executes the complete setup phase: compile → SRS → keys.
-func RunSetup() (*SetupResult, error) {
+func RunSetup(numFeatures int) (*SetupResult, error) {
 	result := &SetupResult{}
 
-	ccs, compileTime, err := CompileCircuit()
+	ccs, compileTime, err := CompileCircuit(numFeatures)
 	if err != nil {
 		return nil, err
 	}

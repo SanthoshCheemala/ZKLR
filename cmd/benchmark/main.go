@@ -57,7 +57,8 @@ func main() {
 
 			// Setup
 			setupStart := time.Now()
-			setup, err := prover.RunBatchSetup(batchSize)
+			// Assuming benchmark data uses 2 features for backwards compatibility default
+			setup, err := prover.RunBatchSetup(batchSize, 2)
 			setupDone := time.Since(setupStart)
 			if err != nil {
 				fmt.Printf("  Setup FAILED: %v\n", err)
@@ -67,7 +68,7 @@ func main() {
 
 			// Run predictions
 			predStart := time.Now()
-			batchResults := prover.BatchPredictParallel(setup, W1_FLOAT, W2_FLOAT, B_FLOAT, testFeatures, workers)
+			batchResults := prover.BatchPredictParallel(setup, []float64{W1_FLOAT, W2_FLOAT}, B_FLOAT, testFeatures, workers)
 			predDone := time.Since(predStart)
 
 			// Count results
@@ -146,7 +147,7 @@ func main() {
 	fmt.Println("✅ Done!")
 }
 
-func loadTestFeatures() [][2]int {
+func loadTestFeatures() [][]int {
 	f, err := os.Open(DATASET)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to open %s: %v\n", DATASET, err)
@@ -154,7 +155,7 @@ func loadTestFeatures() [][2]int {
 	}
 	defer f.Close()
 
-	var features [][2]int
+	var features [][]int
 	first := true
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
@@ -165,9 +166,12 @@ func loadTestFeatures() [][2]int {
 		}
 		parts := strings.Split(line, ",")
 		if len(parts) >= 2 {
-			h, _ := strconv.Atoi(parts[0])
-			w, _ := strconv.Atoi(parts[1])
-			features = append(features, [2]int{h, w})
+			lastIdx := len(parts) - 1
+			row := make([]int, lastIdx)
+			for j := 0; j < lastIdx; j++ {
+				row[j], _ = strconv.Atoi(parts[j])
+			}
+			features = append(features, row)
 		}
 	}
 	return features

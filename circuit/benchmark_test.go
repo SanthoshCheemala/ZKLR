@@ -39,7 +39,7 @@ func BenchmarkFullPipeline(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		// Compile
-		circuit := &LRCircuit{}
+		circuit := NewLRCircuit(2)
 		ccs, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, circuit)
 		if err != nil {
 			b.Fatal(err)
@@ -56,7 +56,10 @@ func BenchmarkFullPipeline(b *testing.B) {
 		}
 
 		// Prove
-		assignment := &LRCircuit{W: [2]frontend.Variable{w[0], w[1]}, B: bi, X: [2]frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+		assignment := &LRCircuit{
+			W: []frontend.Variable{w[0], w[1]},
+			B: bi,
+			X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
 		witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 		proof, err := plonk.Prove(ccs, pk, witness)
 		if err != nil {
@@ -76,7 +79,7 @@ func BenchmarkFullPipeline(b *testing.B) {
 
 func BenchmarkCompile(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		circuit := &LRCircuit{}
+		circuit := NewLRCircuit(2)
 		_, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, circuit)
 		if err != nil {
 			b.Fatal(err)
@@ -85,7 +88,7 @@ func BenchmarkCompile(b *testing.B) {
 }
 
 func BenchmarkSetup(b *testing.B) {
-	circuit := &LRCircuit{}
+	circuit := NewLRCircuit(2)
 	ccs, _ := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, circuit)
 
 	b.ResetTimer()
@@ -99,13 +102,13 @@ func BenchmarkSetup(b *testing.B) {
 }
 
 func BenchmarkProve(b *testing.B) {
-	circuit := &LRCircuit{}
+	circuit := NewLRCircuit(2)
 	ccs, _ := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, circuit)
 	srs, srsLagrange, _ := unsafekzg.NewSRS(ccs)
 	pk, _, _ := plonk.Setup(ccs, srs, srsLagrange)
 
 	w, bi, x, zt, rem, y := computeWitness(-3.3144933046, 0.3877500778, 281.2861173099, 170, 750)
-	assignment := &LRCircuit{W: [2]frontend.Variable{w[0], w[1]}, B: bi, X: [2]frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: bi, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
 	witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 
 	b.ResetTimer()
@@ -118,13 +121,13 @@ func BenchmarkProve(b *testing.B) {
 }
 
 func BenchmarkVerify(b *testing.B) {
-	circuit := &LRCircuit{}
+	circuit := NewLRCircuit(2)
 	ccs, _ := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, circuit)
 	srs, srsLagrange, _ := unsafekzg.NewSRS(ccs)
 	pk, vk, _ := plonk.Setup(ccs, srs, srsLagrange)
 
 	w, bi, x, zt, rem, y := computeWitness(-3.3144933046, 0.3877500778, 281.2861173099, 170, 750)
-	assignment := &LRCircuit{W: [2]frontend.Variable{w[0], w[1]}, B: bi, X: [2]frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: bi, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
 	witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	proof, _ := plonk.Prove(ccs, pk, witness)
 	publicWitness, _ := witness.Public()
@@ -148,7 +151,7 @@ func TestMetricsReport(t *testing.T) {
 	// 1. Compile
 	t.Log("─── Circuit Compilation ───")
 	startCompile := time.Now()
-	circuit := &LRCircuit{}
+	circuit := NewLRCircuit(2)
 	ccs, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, circuit)
 	compileTime := time.Since(startCompile)
 	if err != nil {
@@ -185,7 +188,7 @@ func TestMetricsReport(t *testing.T) {
 
 	// 3. Prove
 	t.Log("\n─── Proof Generation ───")
-	assignment := &LRCircuit{W: [2]frontend.Variable{w[0], w[1]}, B: bi, X: [2]frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: bi, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
 	witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 
 	startProve := time.Now()
@@ -326,8 +329,8 @@ func TestWithPreScaledConstants(t *testing.T) {
 			y_bi = maxOut
 		}
 
-		assignment := &LRCircuit{W: [2]frontend.Variable{w1Scaled, w2Scaled}, B: bScaled, X: [2]frontend.Variable{x_bi[0], x_bi[1]}, ZTable: z_table, Rem: rem, Y: y_bi}
-		err := test.IsSolved(&LRCircuit{}, assignment, ecc.BN254.ScalarField())
+		assignment := &LRCircuit{W: []frontend.Variable{w1Scaled, w2Scaled}, B: bScaled, X: []frontend.Variable{x_bi[0], x_bi[1]}, ZTable: z_table, Rem: rem, Y: y_bi}
+		err := test.IsSolved(NewLRCircuit(2), assignment, ecc.BN254.ScalarField())
 
 		prediction := "NORMAL"
 		if y_float >= 0.5 {

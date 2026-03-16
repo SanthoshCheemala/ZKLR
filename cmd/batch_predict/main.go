@@ -73,10 +73,7 @@ func main() {
 	fmt.Printf("    VK size:       %.1f KB\n", float64(setup.VKSizeBytes)/1024)
 	fmt.Printf("    Total:         %v\n", setupTotal)
 
-	// Save keys
 	os.MkdirAll("results", 0o755)
-	prover.SaveProvingKey(setup.ProvingKey, "results/batch_proving.key")
-	prover.SaveVerificationKey(setup.VerificationKey, "results/batch_verification.key")
 
 	// ─── Phase 2: Load Dataset ───────────────────────────
 	fmt.Println("\n[2] Loading dataset...")

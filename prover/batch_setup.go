@@ -4,6 +4,7 @@ package prover
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -32,8 +33,19 @@ type BatchSetupResult struct {
 
 // RunBatchSetup compiles the batch circuit and generates keys.
 func RunBatchSetup(batchSize int, numFeatures int) (*BatchSetupResult, error) {
+	return RunBatchSetupCached(batchSize, numFeatures, "results")
+}
+
+// RunBatchSetupCached compiles the batch circuit, loading keys from disk cache if available.
+// Cache files are keyed by batchSize and numFeatures: results/batch_pk_b{N}_f{F}.key
+// On cache hit: only circuit compilation (~500ms) is needed instead of full SRS generation (~23s).
+func RunBatchSetupCached(batchSize int, numFeatures int, cacheDir string) (*BatchSetupResult, error) {
 	result := &BatchSetupResult{BatchSize: batchSize}
 
+	pkPath := fmt.Sprintf("%s/batch_pk_b%d_f%d.key", cacheDir, batchSize, numFeatures)
+	vkPath := fmt.Sprintf("%s/batch_vk_b%d_f%d.key", cacheDir, batchSize, numFeatures)
+
+	// Always compile — fast (~500ms) and required for witness/prove
 	start := time.Now()
 	c := circuit.NewBatchCircuit(batchSize, numFeatures)
 	ccs, err := frontend.Compile(ecc.BN254.ScalarField(), scs.NewBuilder, c)
@@ -44,6 +56,32 @@ func RunBatchSetup(batchSize int, numFeatures int) (*BatchSetupResult, error) {
 	result.ConstraintSystem = ccs
 	result.NumConstraints = ccs.GetNbConstraints()
 
+	// Try loading cached keys
+	if _, err := os.Stat(pkPath); err == nil {
+		if _, err := os.Stat(vkPath); err == nil {
+			loadStart := time.Now()
+			pk, err := LoadProvingKey(pkPath)
+			if err == nil {
+				vk, err := LoadVerificationKey(vkPath)
+				if err == nil {
+					result.ProvingKey = pk
+					result.VerificationKey = vk
+					result.SetupTime = time.Since(loadStart)
+
+					var pkBuf, vkBuf bytes.Buffer
+					pk.WriteTo(&pkBuf)
+					vk.WriteTo(&vkBuf)
+					result.PKSizeBytes = pkBuf.Len()
+					result.VKSizeBytes = vkBuf.Len()
+					fmt.Printf("    [cache hit] Loaded keys from %s\n", cacheDir)
+					return result, nil
+				}
+			}
+		}
+	}
+
+	// Cache miss — full SRS + key generation
+	os.MkdirAll(cacheDir, 0o755)
 	start = time.Now()
 	srsBuf, srsLagrange, err := unsafekzg.NewSRS(ccs)
 	if err != nil {
@@ -62,6 +100,11 @@ func RunBatchSetup(batchSize int, numFeatures int) (*BatchSetupResult, error) {
 	vk.WriteTo(&vkBuf)
 	result.PKSizeBytes = pkBuf.Len()
 	result.VKSizeBytes = vkBuf.Len()
+
+	// Save to cache
+	SaveProvingKey(pk, pkPath)
+	SaveVerificationKey(vk, vkPath)
+	fmt.Printf("    [cache saved] Keys written to %s\n", cacheDir)
 
 	return result, nil
 }

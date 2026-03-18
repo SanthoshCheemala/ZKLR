@@ -4,6 +4,7 @@
 //
 //	go run ./cmd/batch_predict/                           # defaults: batch=20, workers=auto
 //	go run ./cmd/batch_predict/ -batch=50 -workers=8      # custom
+//	go run ./cmd/batch_predict/ -workers=64 -keys=16      # 64 workers, 16 key copies (~530MB)
 //	go run ./cmd/batch_predict/ -dataset=data/student_dataset.csv -batch=20 -workers=32  # HPC
 package main
 
@@ -25,6 +26,7 @@ func main() {
 	// CLI flags
 	batchSize := flag.Int("batch", 20, "predictions per proof")
 	numWorkers := flag.Int("workers", 0, "parallel workers (0=auto)")
+	keyPoolSize := flag.Int("keys", 0, "key pool size for memory control (0=auto, max 16)")
 	datasetPath := flag.String("dataset", "data/bmi_dataset_test.csv", "CSV file path")
 	weightsFlag := flag.String("weights", "-3.3144933046,0.3877500778", "comma-separated model weights")
 	biasFlag := flag.Float64("bias", 281.2861173099, "model bias")
@@ -93,7 +95,7 @@ func main() {
 	// ─── Phase 3: Parallel Batch Predictions ─────────────
 	fmt.Println("\n[3] Running batch parallel predictions...")
 	predStart := time.Now()
-	batchResults := prover.BatchPredictParallel(setup, weights, bias, features, *numWorkers)
+	batchResults := prover.BatchPredictParallel(setup, weights, bias, features, *numWorkers, *keyPoolSize)
 	predTotal := time.Since(predStart)
 
 	// ─── Phase 4: Collect Results ────────────────────────

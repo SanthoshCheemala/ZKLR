@@ -103,12 +103,19 @@ func ComputeBatchWitness(wFloat []float64, bFloat float64, features [][]int, bat
 	return assignment
 }
 
+// DefaultKeyPoolSize is the default number of key copies when not specified.
+// 16 copies ≈ 530MB memory, good balance for most HPC systems.
+const DefaultKeyPoolSize = 16
+
 // BatchPredictParallel runs all predictions using batching + parallelism.
+// keyPoolSize controls memory usage: fewer keys = less memory but more serialization.
+// Set keyPoolSize=0 for auto (min of numWorkers and DefaultKeyPoolSize).
 func BatchPredictParallel(
 	setup *BatchSetupResult,
 	wFloat []float64, bFloat float64,
 	features [][]int,
 	numWorkers int,
+	keyPoolSize int,
 ) []*BatchPredResult {
 	batchSize := setup.BatchSize
 
@@ -118,6 +125,18 @@ func BatchPredictParallel(
 		if numWorkers < 1 {
 			numWorkers = 1
 		}
+	}
+
+	// Determine key pool size (hybrid approach: fewer keys than workers saves memory)
+	if keyPoolSize <= 0 {
+		// Auto: use min(numWorkers, DefaultKeyPoolSize) for reasonable memory
+		keyPoolSize = numWorkers
+		if keyPoolSize > DefaultKeyPoolSize {
+			keyPoolSize = DefaultKeyPoolSize
+		}
+	}
+	if keyPoolSize > numWorkers {
+		keyPoolSize = numWorkers // No point having more keys than workers
 	}
 
 	// Split features into batches
@@ -130,17 +149,20 @@ func BatchPredictParallel(
 		batches = append(batches, features[i:end])
 	}
 
-	fmt.Printf("    Batches: %d (size=%d, workers=%d)\n", len(batches), batchSize, numWorkers)
+	// Estimate memory usage
+	pkSizeMB := float64(setup.PKSizeBytes) / (1024 * 1024)
+	totalMemMB := pkSizeMB * float64(keyPoolSize)
 
-	// Create a pool of key sets - one per worker for true parallelism
-	// Each worker gets its own copy of PK/VK to avoid concurrent access issues
-	fmt.Printf("    Creating %d key copies for parallel workers...\n", numWorkers)
-	keyPool := make(chan *keySet, numWorkers)
-	for i := 0; i < numWorkers; i++ {
+	fmt.Printf("    Batches: %d (size=%d, workers=%d, keys=%d)\n", len(batches), batchSize, numWorkers, keyPoolSize)
+	fmt.Printf("    Memory: %.0f MB for key pool (%.1f MB × %d copies)\n", totalMemMB, pkSizeMB, keyPoolSize)
+
+	// Create key pool - hybrid approach allows more workers than keys
+	// Workers wait for available keys, enabling memory-efficient parallelism
+	keyPool := make(chan *keySet, keyPoolSize)
+	for i := 0; i < keyPoolSize; i++ {
 		keys, err := cloneKeys(setup.ProvingKey, setup.VerificationKey)
 		if err != nil {
-			fmt.Printf("    Warning: failed to clone keys for worker %d: %v\n", i, err)
-			// Fall back to using original keys with mutex protection
+			fmt.Printf("    Warning: failed to clone keys %d: %v\n", i, err)
 			keys = &keySet{pk: setup.ProvingKey, vk: setup.VerificationKey}
 		}
 		keyPool <- keys
@@ -148,19 +170,19 @@ func BatchPredictParallel(
 
 	results := make([]*BatchPredResult, len(batches))
 	var wg sync.WaitGroup
+	sem := make(chan struct{}, numWorkers) // Limits concurrent goroutines
 
 	for bIdx, batch := range batches {
 		wg.Add(1)
+		sem <- struct{}{} // Acquire worker slot
 
 		go func(idx int, batchFeatures [][]int) {
 			defer wg.Done()
-
-			// Grab a private key set from pool (also limits concurrency)
-			keys := <-keyPool
-			defer func() { keyPool <- keys }()
+			defer func() { <-sem }() // Release worker slot
 
 			result := &BatchPredResult{BatchIndex: idx}
 
+			// Witness computation runs in parallel (no key needed yet)
 			assignment := ComputeBatchWitness(wFloat, bFloat, batchFeatures, batchSize)
 
 			// Build per-prediction results
@@ -185,7 +207,7 @@ func BatchPredictParallel(
 				})
 			}
 
-			// Create witness (parallel — this is safe)
+			// Create witness (parallel — no key needed)
 			witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 			if err != nil {
 				result.Error = fmt.Errorf("batch %d witness failed: %w", idx, err)
@@ -193,7 +215,11 @@ func BatchPredictParallel(
 				return
 			}
 
-			// Prove using worker's private key copy (true parallelism)
+			// Grab key from pool for proving (may wait if all keys in use)
+			keys := <-keyPool
+			defer func() { keyPool <- keys }()
+
+			// Prove using worker's private key copy
 			proveStart := time.Now()
 			proof, err := plonk.Prove(setup.ConstraintSystem, keys.pk, witness)
 			result.ProveTime = time.Since(proveStart)

@@ -4,6 +4,7 @@ package prover
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"math/big"
 	"runtime"
 	"sync"
@@ -15,6 +16,39 @@ import (
 
 	"github.com/santhoshcheemala/ZKLR/circuit"
 )
+
+// keySet holds a private copy of proving/verification keys for one worker.
+type keySet struct {
+	pk plonk.ProvingKey
+	vk plonk.VerifyingKey
+}
+
+// cloneKeys creates a deep copy of keys by serializing and deserializing.
+func cloneKeys(pk plonk.ProvingKey, vk plonk.VerifyingKey) (*keySet, error) {
+	// Serialize PK
+	var pkBuf bytes.Buffer
+	if _, err := pk.WriteTo(&pkBuf); err != nil {
+		return nil, fmt.Errorf("serialize pk: %w", err)
+	}
+	// Deserialize PK
+	newPK := plonk.NewProvingKey(ecc.BN254)
+	if _, err := newPK.(io.ReaderFrom).ReadFrom(&pkBuf); err != nil {
+		return nil, fmt.Errorf("deserialize pk: %w", err)
+	}
+
+	// Serialize VK
+	var vkBuf bytes.Buffer
+	if _, err := vk.WriteTo(&vkBuf); err != nil {
+		return nil, fmt.Errorf("serialize vk: %w", err)
+	}
+	// Deserialize VK
+	newVK := plonk.NewVerifyingKey(ecc.BN254)
+	if _, err := newVK.(io.ReaderFrom).ReadFrom(&vkBuf); err != nil {
+		return nil, fmt.Errorf("deserialize vk: %w", err)
+	}
+
+	return &keySet{pk: newPK, vk: newVK}, nil
+}
 
 // BatchPredResult holds results for one batch of predictions.
 type BatchPredResult struct {
@@ -98,18 +132,32 @@ func BatchPredictParallel(
 
 	fmt.Printf("    Batches: %d (size=%d, workers=%d)\n", len(batches), batchSize, numWorkers)
 
+	// Create a pool of key sets - one per worker for true parallelism
+	// Each worker gets its own copy of PK/VK to avoid concurrent access issues
+	fmt.Printf("    Creating %d key copies for parallel workers...\n", numWorkers)
+	keyPool := make(chan *keySet, numWorkers)
+	for i := 0; i < numWorkers; i++ {
+		keys, err := cloneKeys(setup.ProvingKey, setup.VerificationKey)
+		if err != nil {
+			fmt.Printf("    Warning: failed to clone keys for worker %d: %v\n", i, err)
+			// Fall back to using original keys with mutex protection
+			keys = &keySet{pk: setup.ProvingKey, vk: setup.VerificationKey}
+		}
+		keyPool <- keys
+	}
+
 	results := make([]*BatchPredResult, len(batches))
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, numWorkers)
-	// Note: gnark v0.11+ is thread-safe, mutex removed for parallel proving
 
 	for bIdx, batch := range batches {
 		wg.Add(1)
-		sem <- struct{}{}
 
 		go func(idx int, batchFeatures [][]int) {
 			defer wg.Done()
-			defer func() { <-sem }()
+
+			// Grab a private key set from pool (also limits concurrency)
+			keys := <-keyPool
+			defer func() { keyPool <- keys }()
 
 			result := &BatchPredResult{BatchIndex: idx}
 
@@ -145,9 +193,9 @@ func BatchPredictParallel(
 				return
 			}
 
-			// Prove (parallel - gnark v0.11 is thread-safe)
+			// Prove using worker's private key copy (true parallelism)
 			proveStart := time.Now()
-			proof, err := plonk.Prove(setup.ConstraintSystem, setup.ProvingKey, witness)
+			proof, err := plonk.Prove(setup.ConstraintSystem, keys.pk, witness)
 			result.ProveTime = time.Since(proveStart)
 
 			if err != nil {
@@ -160,10 +208,10 @@ func BatchPredictParallel(
 			proof.WriteTo(&proofBuf)
 			result.ProofBytes = proofBuf.Bytes()
 
-			// Verify (parallel — this is safe)
+			// Verify using worker's private key copy
 			publicWitness, _ := witness.Public()
 			verifyStart := time.Now()
-			err = plonk.Verify(proof, setup.VerificationKey, publicWitness)
+			err = plonk.Verify(proof, keys.vk, publicWitness)
 			result.VerifyTime = time.Since(verifyStart)
 			result.Verified = (err == nil)
 

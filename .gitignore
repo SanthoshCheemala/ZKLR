@@ -1,17 +1,15 @@
 # Generated/ignored files for ZKLR
 
 # Compiled binaries
-zkproof
-zkproof_batched
-security_demo
+batch_predict
+predict
+benchmark
 
-# Documentation backups
-backup/
-
-# Circuit cache files (large binaries)
+# Circuit cache and keys
 *.cache
+*.key
 
-# Go build artifacts and binaries
+# Go build artifacts
 *.exe
 *.exe~
 *.dll
@@ -20,8 +18,6 @@ backup/
 *.test
 *.out
 go.work
-main
-cmd/sim/main
 
 # Python
 __pycache__/
@@ -37,4 +33,3 @@ __pycache__/
 # Logs and temp
 *.log
 *.tmp
-

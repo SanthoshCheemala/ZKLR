@@ -79,9 +79,10 @@ func BatchPredictParallel(
 	batchSize := setup.BatchSize
 
 	if numWorkers <= 0 {
-		numWorkers = runtime.NumCPU()
-		if numWorkers > 8 {
-			numWorkers = 8
+		// Use 50% of available cores for HPC optimization
+		numWorkers = runtime.NumCPU() / 2
+		if numWorkers < 1 {
+			numWorkers = 1
 		}
 	}
 
@@ -100,7 +101,7 @@ func BatchPredictParallel(
 	results := make([]*BatchPredResult, len(batches))
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, numWorkers)
-	var proveMu sync.Mutex // gnark solver is not fully concurrent-safe
+	// Note: gnark v0.11+ is thread-safe, mutex removed for parallel proving
 
 	for bIdx, batch := range batches {
 		wg.Add(1)
@@ -144,12 +145,10 @@ func BatchPredictParallel(
 				return
 			}
 
-			// Prove (serialized — gnark solver shares internal state)
-			proveMu.Lock()
+			// Prove (parallel - gnark v0.11 is thread-safe)
 			proveStart := time.Now()
 			proof, err := plonk.Prove(setup.ConstraintSystem, setup.ProvingKey, witness)
 			result.ProveTime = time.Since(proveStart)
-			proveMu.Unlock()
 
 			if err != nil {
 				result.Error = fmt.Errorf("batch %d prove failed: %w", idx, err)

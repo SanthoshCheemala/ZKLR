@@ -1,0 +1,26 @@
+ZK-LR Worker Count Benchmark Results
+=====================================
+
+Configuration:
+  Dataset:       data/synthetic_4f_test.csv
+  Samples:       1000
+  Batch size:    20
+  Features:      4
+  Constraints:   322948
+  Setup time:    1.885513291s
+
+Results:
+Workers    Predict Time    Prove Time      Per Sample   Speedup    Accuracy  
+───────────────────────────────────────────────────────────────────────────
+1          8m51s           8m51s           0.531s       3.8x       74.70%    
+2          8m49s           8m49s           0.529s       3.8x       74.70%    
+4          8m58s           8m58s           0.538s       3.7x       74.70%    
+6          8m47s           8m47s           0.527s       3.8x       74.70%    
+
+Optimal: workers=6 → 0.527s/sample (3.8x speedup)
+
+Analysis:
+=========
+  1→2 workers: 0.4% improvement
+  2→4 workers: -1.8% improvement
+  4→6 workers: 2.1% improvement

@@ -43,9 +43,10 @@ func main() {
 	bias := *biasFlag
 
 	if *numWorkers == 0 {
-		*numWorkers = runtime.NumCPU()
-		if *numWorkers > 8 {
-			*numWorkers = 8
+		// Use 50% of available cores for HPC optimization
+		*numWorkers = runtime.NumCPU() / 2
+		if *numWorkers < 1 {
+			*numWorkers = 1
 		}
 	}
 

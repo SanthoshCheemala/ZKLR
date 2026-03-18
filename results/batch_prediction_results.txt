@@ -2,17 +2,17 @@ ZK-LR Batch Parallel Prediction Results
 ========================================
 
 Configuration:
-  Batch size:       50
-  Workers:          2
-  Constraints:      649838
-  PK size:          65569.7 KB
+  Batch size:       20
+  Workers:          4
+  Constraints:      322948
+  PK size:          32801.7 KB
   VK size:          33.6 KB
 
 Results:
   Total samples:    1000
-  Accuracy:         98.40%
-  Total predict:    7m2.187004917s
-  Total prove:      7m2.182737876s
-  Total verify:     59.814ms
-  Wall-clock/sample: 0.422s
-  Speedup vs single: 4.7x
+  Accuracy:         74.50%
+  Total predict:    8m44.175087708s
+  Total prove:      34m9.801929339s
+  Total verify:     2.0591205s
+  Wall-clock/sample: 0.524s
+  Speedup vs single: 3.8x

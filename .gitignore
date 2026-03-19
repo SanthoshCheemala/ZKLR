@@ -4,10 +4,12 @@
 batch_predict
 predict
 benchmark
+export
 
 # Circuit cache and keys
 *.cache
 *.key
+*.vk
 
 # Go build artifacts
 *.exe

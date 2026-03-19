@@ -81,7 +81,9 @@ func RunBatchSetupCached(batchSize int, numFeatures int, cacheDir string) (*Batc
 	}
 
 	// Cache miss — full SRS + key generation
-	os.MkdirAll(cacheDir, 0o755)
+	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
+		return nil, fmt.Errorf("create cache dir %q: %w", cacheDir, err)
+	}
 	start = time.Now()
 	srsBuf, srsLagrange, err := unsafekzg.NewSRS(ccs)
 	if err != nil {
@@ -102,8 +104,12 @@ func RunBatchSetupCached(batchSize int, numFeatures int, cacheDir string) (*Batc
 	result.VKSizeBytes = vkBuf.Len()
 
 	// Save to cache
-	SaveProvingKey(pk, pkPath)
-	SaveVerificationKey(vk, vkPath)
+	if err := SaveProvingKey(pk, pkPath); err != nil {
+		return nil, fmt.Errorf("save proving key: %w", err)
+	}
+	if err := SaveVerificationKey(vk, vkPath); err != nil {
+		return nil, fmt.Errorf("save verification key: %w", err)
+	}
 	fmt.Printf("    [cache saved] Keys written to %s\n", cacheDir)
 
 	return result, nil

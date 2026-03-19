@@ -211,7 +211,7 @@ func TestBatchPredict(t *testing.T) {
 	t.Logf("Batch circuit: %d constraints (batch=5)", setup.NumConstraints)
 
 	features := [][]int{{150, 400}, {160, 500}, {170, 700}, {180, 900}, {190, 1000}}
-	results := BatchPredictParallel(setup, []float64{testW1, testW2}, testB, features, 2)
+	results := BatchPredictParallel(setup, []float64{testW1, testW2}, testB, features, 2, 0)
 
 	for _, br := range results {
 		if br.Error != nil {

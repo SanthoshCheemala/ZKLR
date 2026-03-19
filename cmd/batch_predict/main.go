@@ -2,10 +2,10 @@
 //
 // Usage:
 //
-//	go run ./cmd/batch_predict/                           # defaults: batch=20, workers=auto
-//	go run ./cmd/batch_predict/ -batch=50 -workers=8      # custom
-//	go run ./cmd/batch_predict/ -workers=64 -keys=16      # 64 workers, 16 key copies (~530MB)
-//	go run ./cmd/batch_predict/ -dataset=data/student_dataset.csv -batch=20 -workers=32  # HPC
+//	go run ./cmd/batch_predict/                           # defaults: batch=80, workers=auto (50% CPU cores)
+//	go run ./cmd/batch_predict/ -batch=20 -workers=4      # custom
+//	go run ./cmd/batch_predict/ -workers=16 -keys=4       # 16 workers, 4 key copies (~260MB)
+//	go run ./cmd/batch_predict/ -dataset=data/test_200.csv -batch=80 -workers=0   # optimal setup (auto workers)
 package main
 
 import (
@@ -21,15 +21,14 @@ import (
 	"github.com/santhoshcheemala/ZKLR/prover"
 )
 
-
 func main() {
-	// CLI flags
-	batchSize := flag.Int("batch", 20, "predictions per proof")
-	numWorkers := flag.Int("workers", 0, "parallel workers (0=auto)")
+	// CLI flags (hardcoded optimal: batch=80, workers=auto-half-CPU, keys=auto)
+	batchSize := flag.Int("batch", 80, "predictions per proof")
+	numWorkers := flag.Int("workers", 0, "parallel workers (0=auto: 50% of CPU cores)")
 	keyPoolSize := flag.Int("keys", 0, "key pool size for memory control (0=auto, max 16)")
-	datasetPath := flag.String("dataset", "data/bmi_dataset_test.csv", "CSV file path")
-	weightsFlag := flag.String("weights", "-3.3144933046,0.3877500778", "comma-separated model weights")
-	biasFlag := flag.Float64("bias", 281.2861173099, "model bias")
+	datasetPath := flag.String("dataset", "data/test_200.csv", "CSV file path")
+	weightsFlag := flag.String("weights", "0.02638518204922373,0.02298176404030624,0.024034825597816466,0.024289043576076152", "comma-separated model weights")
+	biasFlag := flag.Float64("bias", -4.894930414628542, "model bias")
 	flag.Parse()
 
 	weightStrs := strings.Split(*weightsFlag, ",")
@@ -43,6 +42,12 @@ func main() {
 		weights[i] = w
 	}
 	bias := *biasFlag
+
+	// Validate hardcoded 4-feature model
+	if len(weights) != 4 {
+		fmt.Fprintf(os.Stderr, "Error: hardcoded model expects 4 weights, got %d\n", len(weights))
+		os.Exit(1)
+	}
 
 	if *numWorkers == 0 {
 		// Use 50% of available cores for HPC optimization
@@ -76,7 +81,9 @@ func main() {
 	fmt.Printf("    VK size:       %.1f KB\n", float64(setup.VKSizeBytes)/1024)
 	fmt.Printf("    Total:         %v\n", setupTotal)
 
-	os.MkdirAll("results", 0o755)
+	if err := os.MkdirAll("results", 0o755); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: failed to create results directory: %v\n", err)
+	}
 
 	// ─── Phase 2: Load Dataset ───────────────────────────
 	fmt.Println("\n[2] Loading dataset...")
@@ -101,7 +108,6 @@ func main() {
 	// ─── Phase 4: Collect Results ────────────────────────
 	var (
 		correct       int
-		totalSamples  int
 		totalProve    time.Duration
 		totalVerify   time.Duration
 		failedBatches int
@@ -122,12 +128,15 @@ func main() {
 
 		batchCorrect := 0
 		for _, p := range br.Predictions {
-			totalSamples++
 			idx := 0
 			for di, d := range testData {
 				h, w := 0, 0
-				if len(d.features) > 0 { h = d.features[0] }
-				if len(d.features) > 1 { w = d.features[1] }
+				if len(d.features) > 0 {
+					h = d.features[0]
+				}
+				if len(d.features) > 1 {
+					w = d.features[1]
+				}
 				if h == p.Height && w == p.Weight {
 					idx = di
 					break
@@ -195,7 +204,7 @@ func main() {
 
 type sample struct {
 	features []int
-	label  int // 1 = overweight, 0 = normal
+	label    int // 1 = overweight, 0 = normal
 }
 
 func loadCSV(path string) ([]sample, error) {
@@ -218,15 +227,29 @@ func loadCSV(path string) ([]sample, error) {
 		if len(parts) < 2 {
 			continue
 		}
-		
+
 		lastIdx := len(parts) - 1
-		label, _ := strconv.Atoi(strings.TrimSpace(parts[lastIdx]))
-		
-		features := make([]int, lastIdx)
-		for j := 0; j < lastIdx; j++ {
-			features[j], _ = strconv.Atoi(strings.TrimSpace(parts[j]))
+		label, err := strconv.Atoi(strings.TrimSpace(parts[lastIdx]))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: invalid label, skipping row: %v\n", err)
+			continue
 		}
 		
+		features := make([]int, lastIdx)
+		rowValid := true
+		for j := 0; j < lastIdx; j++ {
+			f, err := strconv.Atoi(strings.TrimSpace(parts[j]))
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: invalid feature at column %d, skipping row\n", j)
+				rowValid = false
+				break
+			}
+			features[j] = f
+		}
+		if !rowValid {
+			continue
+		}
+
 		samples = append(samples, sample{features: features, label: label})
 	}
 	return samples, scanner.Err()
@@ -237,6 +260,7 @@ func loadCSV(path string) ([]sample, error) {
 func exportBatchResults(results []*prover.BatchPredResult, data []sample, accuracy float64, setup *prover.BatchSetupResult, predTotal, totalProve, totalVerify time.Duration, workers int) {
 	f, err := os.Create("results/batch_prediction_results.txt")
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: failed to create results file: %v\n", err)
 		return
 	}
 	defer f.Close()

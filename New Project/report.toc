@@ -1,0 +1,71 @@
+\contentsline {chapter}{List of Figures}{ix}{chapter*.2}%
+\contentsline {chapter}{List of Tables}{xi}{chapter*.3}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Background}{2}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Motivation}{2}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Problem Statement}{3}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Project Scope}{3}{section.1.4}%
+\contentsline {chapter}{\numberline {2}Literature Review}{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Introduction}{5}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Scalable Zero-Knowledge Proofs for Non-Linear Functions in Machine Learning}{6}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Mystique: Efficient Conversions for Zero-Knowledge Proofs}{6}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Zero-Knowledge Proofs for Decision Tree Predictions and Accuracy}{7}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Proof of Training for Logistic Regression}{7}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Efficient Zero-Knowledge Proofs for Deep Learning Training}{8}{section.2.6}%
+\contentsline {section}{\numberline {2.7}Benchmarking Non-Interactive Zero-Knowledge Proof Protocols}{8}{section.2.7}%
+\contentsline {section}{\numberline {2.8}ZKP-Based Verifiable Machine Learning Survey}{9}{section.2.8}%
+\contentsline {section}{\numberline {2.9}Research Gaps Identified}{9}{section.2.9}%
+\contentsline {section}{\numberline {2.10}Conclusion}{10}{section.2.10}%
+\contentsline {chapter}{\numberline {3}Theoretical Background}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Zero-Knowledge Proofs}{11}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Arithmetic Circuits and Constraint Systems}{12}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Polynomial Commitment Schemes}{12}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Sigmoid Function and Approximation}{13}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Logistic Regression Model}{14}{section.3.5}%
+\contentsline {section}{\numberline {3.6}System Architecture}{15}{section.3.6}%
+\contentsline {section}{\numberline {3.7}Proof Generation Workflow}{16}{section.3.7}%
+\contentsline {chapter}{\numberline {4}Detailed Implementation}{17}{chapter.4}%
+\contentsline {section}{\numberline {4.1}System Architecture}{17}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Overview}{17}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Technology Stack}{18}{subsection.4.1.2}%
+\contentsline {section}{\numberline {4.2}Dataset Handling}{18}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Dataset Overview}{18}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Dataset Generation and Training}{19}{subsection.4.2.2}%
+\contentsline {section}{\numberline {4.3}Model Design}{19}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Logistic Regression Formulation}{19}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Fixed-Point Encoding}{19}{subsection.4.3.2}%
+\contentsline {section}{\numberline {4.4}Circuit Construction}{20}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Circuit Layers}{20}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Constraint Count}{20}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.5}Proof Generation Workflow}{21}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Setup Phase}{21}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Individual Proof Generation}{21}{subsection.4.5.2}%
+\contentsline {subsection}{\numberline {4.5.3}Batched Proof Implementation}{22}{subsection.4.5.3}%
+\contentsline {section}{\numberline {4.6}Performance Optimizations}{23}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Lookup Table Reduction}{23}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Circuit Caching and Precision Control}{24}{subsection.4.6.2}%
+\contentsline {section}{\numberline {4.7}Security Considerations}{24}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Summary}{24}{section.4.8}%
+\contentsline {chapter}{\numberline {5}Results and Observations}{25}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Proof Size Analysis}{25}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Batched vs Individual Performance}{26}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Throughput Analysis}{27}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Scalability Characteristics}{28}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Batch Processing Consistency}{29}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Cumulative Optimization Impact}{30}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Security Validation}{31}{section.5.7}%
+\contentsline {subsection}{\numberline {5.7.1}Test 1: Valid Proof Acceptance}{31}{subsection.5.7.1}%
+\contentsline {subsection}{\numberline {5.7.2}Test 2: Tampered Proof Detection}{32}{subsection.5.7.2}%
+\contentsline {subsection}{\numberline {5.7.3}Test 3: Witness Tampering Detection}{32}{subsection.5.7.3}%
+\contentsline {section}{\numberline {5.8}Limitations and Observations}{33}{section.5.8}%
+\contentsline {subsection}{\numberline {5.8.1}Sequential Processing Constraint}{33}{subsection.5.8.1}%
+\contentsline {subsection}{\numberline {5.8.2}Setup Time Overhead}{34}{subsection.5.8.2}%
+\contentsline {subsection}{\numberline {5.8.3}Batch Size Trade-off}{34}{subsection.5.8.3}%
+\contentsline {subsection}{\numberline {5.8.4}Positive Observations}{34}{subsection.5.8.4}%
+\contentsline {section}{\numberline {5.9}Summary}{34}{section.5.9}%
+\contentsline {chapter}{\numberline {6}Conclusion and Future Work}{36}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Conclusion}{36}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}Insights Gained}{37}{subsection.6.1.1}%
+\contentsline {section}{\numberline {6.2}Future Work}{37}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Final Remarks}{38}{section.6.3}%
+\contentsline {chapter}{Bibliography}{40}{chapter*.18}%

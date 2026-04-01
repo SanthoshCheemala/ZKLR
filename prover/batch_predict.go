@@ -252,3 +252,4 @@ func BatchPredictParallel(
 	wg.Wait()
 	return results
 }
+

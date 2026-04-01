@@ -1,0 +1,180 @@
+\documentclass[12pt,a4wide]{report}
+
+\usepackage{amsthm,amssymb,mathrsfs,setspace,pstcol}%amsmath, latexsym,footmisc
+
+\usepackage{play}
+\usepackage{epsfig}
+%\usepackage[grey,times]{quotchap}
+\usepackage[nottoc]{tocbibind}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+%
+
+\input xy
+\xyoption{all}
+
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{notation}[theorem]{Notation}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\renewcommand{\baselinestretch}{1.5}
+\begin{document}
+
+%\pagenumbering{arabic} \setcounter{page}{1}
+
+% --------------- Title page -----------------------
+\begin{titlepage}
+\enlargethispage{2cm}
+
+\begin{center}
+
+\vspace*{-1cm}
+
+\textbf{\Large [PROJECT TITLE IN CAPITAL LETTERS]}\\[10pt]
+
+\vspace*{2.5cm}
+
+
+                         A Project Report Submitted \\
+                     in Partial Fulfilment of the Requirements  \\
+                     for the Degree of  \\
+                          \vspace{5mm}
+                   {\Large \bf MASTER OF SCIENCE } \\
+                   in \\
+                   {\large \bf [TYPE SCHOOL NAME] } \\
+
+                      \vspace{10mm}
+                   {\em  by} \\ \vspace{3mm}
+             {\large \bf [Type your full name]} \\
+{\large \bf (Roll No. [Type your roll no.])}\\[.35in]
+
+\vfill
+%\includegraphics[width=12cm, height=12cm]{iiserlogo}
+
+\begin{figure}[h]
+% \includegraphics[width=15mm,height=10mm]{time_arma_gs.jpg}
+  \begin{center}
+  \includegraphics[]{iiser_logo.jpg}
+  \end{center}
+\end{figure}
+\vspace*{0.25cm}
+
+{\em\large to }\\%[8pt]
+{\bf\large SCHOOL OF [ TYPE SCHOOL NAME]} \\%[4pt]
+{\bf\large \mbox{INDIAN INSTITUTE OF SCIENCE EDUCATION AND RESEARCH }}\\%[4pt]
+{\bf\large THIRUVANANTHAPURAM - 695551, INDIA}\\%[8pt]
+{\it\large April 2018}
+\end{center}
+
+\end{titlepage}
+
+\clearpage
+% --------------- Declaration  page -----------------------
+\pagenumbering{roman} \setcounter{page}{2}
+\begin{center}
+{\large{\bf{DECLARATION}}}
+\end{center}
+%\thispagestyle{empty}
+
+
+\noindent I, \textbf{[Your Name]} (\textbf{Roll No: [Your roll
+number]}), hereby declare that, this report entitled
+\textbf{``[Title of the project report]''} submitted to Indian
+Institute of Science Education and Research Thiruvananthapuram
+towards partial requirement of {\bf Master of Science} in
+\textbf{[School Name]}  is an original work carried out by me
+under the supervision of \textbf{[Faculty Name]} and has not
+formed the basis for the award of any degree or diploma, in this
+or any other institution or university. I have sincerely tried to
+uphold the academic ethics and honesty. Whenever an external
+information or statement or result is used then, that have been
+duly acknowledged and cited.
+
+\vspace{4cm}
+
+\noindent Thiruvananthapuram - 695 551 \hfill \textbf{[Your Name]}
+
+\noindent April  2018
+
+\clearpage
+
+
+% --------------- Certificate page -----------------------
+\pagenumbering{roman} \setcounter{page}{3}
+\begin{center}
+{\large{\bf{CERTIFICATE}}}
+\end{center}
+%\thispagestyle{empty}
+
+
+\noindent This is to certify that the work contained in this
+project report entitled \textbf{``[Title of the project report]''}
+submitted by \textbf{[Your Name]} (\textbf{Roll No: [Your roll
+number]}) to Indian Institute of Science Education and Research
+Thiruvananthapuram towards partial requirement of {\bf Master of
+Science} in \textbf{[School Name]}   has been carried out by
+[him/her] under my supervision and that it has not been submitted
+elsewhere for the award of any degree.
+
+
+\vspace{4cm}
+
+\noindent Thiruvananthapuram - 695 551 \hfill (Dr. XYZ)
+
+\noindent April  2018 \hfill Project Supervisor
+
+\clearpage
+
+
+
+
+
+
+% --------------- Abstract page -----------------------
+\begin{center}
+{\Large{\bf{ABSTRACT}}}
+\end{center}
+
+
+The main aim of the project ........
+
+\clearpage
+
+
+
+\tableofcontents
+\clearpage
+\listoffigures
+\listoftables
+
+
+\newpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% =========== Main chapters starts here. Type in seperate files and include the filename here. ==
+% ============================
+
+\input chapter1.tex
+
+\input chapter2.tex
+
+
+
+\nocite{golub} \nocite{gerla}\nocite{m1}\nocite{chang}
+\bibliographystyle{plain}
+\bibliography{bib}
+
+\end{document}

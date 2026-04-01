@@ -1,0 +1,97 @@
+\chapter{Literature Review}
+
+\section{Introduction}
+
+The increasing adoption of machine learning models in sensitive domains such as finance, healthcare, and authentication has raised concerns regarding their verifiability, privacy, and correctness. Zero-Knowledge Proofs (ZKPs) have emerged as a powerful cryptographic tool to validate computations without revealing sensitive model parameters or data. This chapter presents a structured review of recent literature on verifiable machine learning, efficient ZKP techniques, and ZKP-based optimization strategies, focusing on contributions relevant to building verifiable logistic regression models using ZKPs.
+
+\section{Scalable Zero-Knowledge Proofs for Non-Linear Functions in Machine Learning}
+
+Hao et al. (2025) introduced a scalable ZKP framework for handling non-linear functions in machine learning, including sigmoid, ReLU, normalization, and other activation functions~\cite{cryptoeprint:2025/507}.  
+Their framework employs digit decomposition and lookup-table-based computation to achieve 50 to 179 $\times$ runtime improvement compared to previous ZKP systems.
+
+\textbf{Insights:}  
+This work underscores the effectiveness of lookup-table-based techniques for efficient non-linear function evaluation, directly influencing our approach to implementing sigmoid computation in logistic regression circuits.
+
+\textbf{Limitations:}  
+The system primarily targets deep learning models, with limited optimizations specific to logistic regression.
+
+\section{Mystique: Efficient Conversions for Zero-Knowledge Proofs}
+
+Weng et al. (2021) developed Mystique, a ZKP framework enabling efficient conversions between arithmetic and Boolean circuits to support large-scale machine learning inference~\cite{cryptoeprint:2021/730}.  
+The system enhances interoperability and performance for matrix-based operations in ZKP environments.
+
+\textbf{Insights:}  
+Mystique demonstrates the benefits of modular circuit construction and efficient arithmetic–Boolean translation, which inspire the layered design of our ZKLR circuit.
+
+\textbf{Limitations:}  
+The system is optimized for complex neural networks, making it heavy for lightweight models such as logistic regression.
+
+\section{Zero-Knowledge Proofs for Decision Tree Predictions and Accuracy}
+
+Zhang et al. (2020) proposed a ZKP protocol for verifying decision-tree predictions and accuracy claims without revealing the internal structure of the model~\cite{10.1145/3372297.3417278}.  
+The system encodes branching logic into arithmetic constraints, enabling verifiable ML predictions.
+
+\textbf{Insights:}  
+This approach motivates our system’s accuracy-verification mechanism for logistic regression predictions.
+
+\textbf{Limitations:}  
+Decision-tree structures are discrete and simpler to encode, while continuous sigmoid-based functions require more complex circuit construction.
+
+\section{Proof of Training for Logistic Regression}
+
+Garg et al. (2023) introduced a proof-of-training (zkPoT) system for logistic regression that uses a hybrid SNARK and MPC-in-the-head design to ensure training correctness over large datasets~\cite{cryptoeprint:2023/1345}.
+
+\textbf{Insights:}  
+Their work demonstrates how logistic regression training can be verifiably proven in zero-knowledge, laying conceptual groundwork for inference verification.
+
+\textbf{Limitations:}  
+The system focuses primarily on the training phase rather than inference or accuracy validation.
+
+\section{Efficient Zero-Knowledge Proofs for Deep Learning Training}
+
+Sun et al. (2023) presented zkDL, an efficient ZKP framework for verifying deep learning training processes~\cite{cryptoeprint:2023/1174}.  
+They introduced zkReLU and structured circuit optimizations to improve proving performance.
+
+\textbf{Insights:}  
+zkDL’s lookup-based and batch-proof aggregation strategies inspired similar design patterns for efficient circuit implementation in our system.
+
+\textbf{Limitations:}  
+The framework is specialized for deep learning, not directly optimized for lightweight logistic regression models.
+
+\section{Benchmarking Non-Interactive Zero-Knowledge Proof Protocols}
+
+El-Hajj and Roelink (2024) conducted a benchmark comparison of zk-SNARK, zk-STARK, and Bulletproof systems, analyzing performance metrics such as proof size, verification time, and prover cost~\cite{info15080463}.
+
+\textbf{Insights:}  
+Their findings justify our adoption of PLONK for its balanced trade-off between succinct proof size and computational efficiency.
+
+\textbf{Limitations:}  
+Their analysis is based on hash-based circuits and does not address ML-specific computational constraints.
+
+\section{ZKP-Based Verifiable Machine Learning Survey}
+
+Xing et al. (2025) provided a comprehensive survey of ZKP-based verifiable decentralized machine learning frameworks~\cite{article}.  
+The survey categorizes ZKP techniques and identifies challenges in building trustworthy privacy-preserving ML systems.
+
+\textbf{Insights:}  
+This survey offers a broad contextual understanding, helping align our architectural choices with emerging ZKML design trends.
+
+\textbf{Limitations:}  
+It remains theoretical and does not detail implementation strategies for logistic regression under ZKP constraints.
+
+\section{Research Gaps Identified}
+
+Despite significant progress in zero-knowledge machine learning, several research gaps persist that motivate the development of our Zero-Knowledge Logistic Regression (ZKLR) framework.  
+First, there is a limited focus on lightweight machine learning models such as logistic regression. Most existing ZKP systems are designed for complex deep learning architectures, overlooking simpler yet practically relevant models~\cite{cryptoeprint:2023/1174}.  
+Second, scalability challenges remain unresolved, as many frameworks have not been evaluated across datasets of varying scales, restricting their applicability to real-world environments where dataset sizes fluctuate~\cite{cryptoeprint:2021/730}.  
+Third, the computation of non-linear functions—particularly the sigmoid function—continues to pose a bottleneck. Efficient and ZKP-friendly sigmoid approximations remain an open problem in circuit design~\cite{cryptoeprint:2025/507}.  
+Fourth, existing works generally adopt fragmented verification strategies, validating either individual prediction correctness or aggregate model accuracy, but rarely providing an integrated framework that addresses both concerns~\cite{10.1145/3372297.3417278}. 
+Finally, dataset adaptivity remains underexplored. Current systems lack flexibility to handle datasets with varying sizes and feature dimensions, limiting their deployment across diverse machine learning applications~\cite{article}.
+
+These gaps collectively underscore the need for an efficient, scalable, and adaptable ZKLR system capable of performing verifiable logistic regression inference while maintaining strong privacy and performance guarantees~\cite{kates2020plonk}.
+
+\section{Conclusion}
+
+The reviewed literature establishes foundational approaches for applying zero-knowledge proofs to machine learning verification. Our work addresses the identified limitations through an integrated system combining modular circuit architecture, lookup-table-based sigmoid approximation, and recursive proof composition for scalable accuracy verification. These contributions extend the state of the art in verifiable and privacy-preserving logistic regression inference.
+
+\clearpage

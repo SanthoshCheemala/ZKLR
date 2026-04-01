@@ -1,0 +1,58 @@
+This is BibTeX, Version 0.99d (TeX Live 2025)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: report.aux
+The style file: plain.bst
+Database file #1: bib.bib
+Warning--entry type for "unknown" isn't style-file defined
+--line 55 of file bib.bib
+Repeated entry---line 121 of file bib.bib
+ : @article{article
+ :                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 132 of file bib.bib
+ : @unknown{unknown
+ :                 ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for "zhang2020zeroknowledge"
+You've used 16 entries,
+            2118 wiz_defined-function locations,
+            583 strings with 7370 characters,
+and the built_in function-call counts, 5901 in all, are:
+= -- 540
+> -- 413
+< -- 2
++ -- 164
+- -- 146
+* -- 414
+:= -- 998
+add.period$ -- 49
+call.type$ -- 16
+change.case$ -- 120
+chr.to.int$ -- 0
+cite$ -- 16
+duplicate$ -- 178
+empty$ -- 392
+format.name$ -- 146
+if$ -- 1219
+int.to.chr$ -- 0
+int.to.str$ -- 16
+missing$ -- 8
+newline$ -- 82
+num.names$ -- 32
+pop$ -- 158
+preamble$ -- 1
+purify$ -- 105
+quote$ -- 0
+skip$ -- 157
+stack$ -- 0
+substring$ -- 188
+swap$ -- 49
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 62
+warning$ -- 0
+while$ -- 40
+width$ -- 18
+write$ -- 170
+(There were 2 error messages)

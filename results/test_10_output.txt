@@ -1,0 +1,26 @@
+============================================================
+  ZK-LR — Batch Parallel Prediction Pipeline
+============================================================
+  Dataset:    data/test_10.csv
+  Batch size: 4
+  Workers:    2 (CPUs: 8)
+
+[1] Batch Setup (compile → SRS → keys)...
+[90m16:56:39[0m [32mINF[0m [1mcompiling circuit[0m
+[90m16:56:39[0m [32mINF[0m [1mparsed circuit inputs[0m [36mnbPublic=[0m20 [36mnbSecret=[0m13
+[90m16:56:39[0m [32mINF[0m [1mbuilding constraint builder[0m [36mnbConstraints=[0m147116
+    [cache hit] Loaded keys from results
+    Constraints:   147116
+    Compile time:  95.42375ms
+    Setup time:    10.12742375s
+    PK size:       24624.2 KB
+    VK size:       48.0 KB
+    Total:         10.2590375s
+
+[2] Loading dataset...
+    Loaded 10 samples
+
+[3] Running batch parallel predictions...
+    Batches: 3 (size=4, workers=2, keys=2)
+    Memory: 48 MB for key pool (24.0 MB × 2 copies)
+signal: interrupt

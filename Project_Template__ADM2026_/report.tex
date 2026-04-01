@@ -1,0 +1,195 @@
+\documentclass[12pt]{report}
+
+\usepackage{amsthm,amssymb,setspace}
+
+\usepackage{longtable}
+\usepackage{parskip}
+\usepackage{epsfig}
+
+\renewcommand{\bibname}{References}   % <-- ADD HERE
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{notation}[theorem]{Notation}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\renewcommand{\baselinestretch}{1.5}
+\begin{document}
+
+
+% --------------- Title page -----------------------
+\begin{titlepage}
+\enlargethispage{2cm}
+
+\begin{center}
+
+\vspace*{-1cm}
+
+\textbf{\Large [PROJECT TITLE IN CAPITAL LETTERS]}\\
+
+\vspace*{1.0 cm}
+
+
+                         A Project Report Submitted \\
+                     in Partial Fulfilment of the Requirements  \\
+                     for the Degree of  \\
+                          \vspace{4.5mm}
+                   {\Large \bf Bachelor of Technology} \\
+                   in \\
+                   {\large \bf Computer Science and Engineering} \\
+                            with Specialization in\\
+                   {\large \bf Cyber Security } \\
+                      \vspace{3.85mm}
+                  {\em  by} \\ \vspace{2.5mm}
+             {\large \bf Student Name} {\large \bf (Roll No. XXXXXXXXXX)}\\
+						 {\large \bf Student Name} {\large \bf (Roll No. XXXXXXXXXX)}\\
+  					 {\large \bf Student Name} {\large \bf (Roll No. XXXXXXXXXX)}\\
+						 {\large \bf Student Name} {\large \bf (Roll No. XXXXXXXXXX)}\\
+
+\vfill
+%\includegraphics[width=12cm, height=12cm]{iiserlogo}
+
+\begin{figure}[h]
+  \begin{center}
+  \includegraphics[width=6cm, height=3cm]{logo2.jpg}
+  \end{center}
+\end{figure}
+%\vspace*{0.22cm}
+{\em\large to }\\%[8pt]
+{\bf \mbox{DEPARTMENT OF CSE-CYBER SECURITY}} \\%[4pt] \\%[4pt]
+{\small \bf \mbox{INDIAN INSTITUTE OF INFORMATION TECHNOLOGY KOTTAYAM}}\\%[4pt]
+{ KERALA - 686635, INDIA}\\%[8pt]
+{\it April 2026}
+
+\end{center}
+
+
+
+\end{titlepage}
+
+\clearpage
+% --------------- Declaration  page -----------------------
+\pagenumbering{roman} \setcounter{page}{2}
+\begin{center}
+{\large{\bf{DECLARATION}}}
+\end{center}
+%\thispagestyle{empty}
+
+
+\noindent WE/I, \textbf{[Your Name]} (\textbf{Roll No: [Your roll
+number]}), hereby declare that, this report entitled
+\textbf{``[Title of the project report]''} submitted to Indian
+Institute of Information Technology Kottayam towards partial
+requirement of {\bf Bachelor of Technology%/Bachelor ofTechnology(Hon)/Master of Science
+} in textbf{Computer Science and Engineering} with specialization in \textbf{Cyber Security} is an original work carried out by me under the supervision of \textbf{[Faculty Name]} and has not formed the basis for the award of any degree or diploma, in this or any other institution or
+university. We/I have sincerely tried to uphold the academic ethics
+and honesty. Whenever an external information or statement or
+result is used then, that have been duly acknowledged and cited.
+
+\vspace{4cm}
+
+\noindent Kottayam-686635 \hfill \textbf{[Your Name - Roll Number]}
+
+\noindent April 2026      \hfill \textbf{[Your Name- Roll Number]}
+
+\noindent									\hfill \textbf{[Your Name- Roll Number]}
+
+\noindent									\hfill \textbf{[Your Name- Roll Number]}
+
+\clearpage
+
+
+% --------------- Certificate page -----------------------
+\pagenumbering{roman} \setcounter{page}{3}
+\begin{center}
+{\large{\bf{CERTIFICATE}}}
+\end{center}
+%\thispagestyle{empty}
+
+
+\noindent This is to certify that the work contained in this
+project report entitled \textbf{``[Title of the project report]''}
+submitted by \textbf{[Your Name]} (\textbf{Roll No: [Your roll
+number]}) to the Indian Institute of Information Technology Kottayam
+towards partial requirement of {\bf Bachelor of Technology %/Bachelor of Technology(Hon)/Master of Science
+} in \textbf{Computer Science and Engineering}  with specialization in \textbf{Cyber Security} has been carried out by [them/him/her] under my
+supervision and that it has not been submitted elsewhere for the
+award of any degree.
+
+
+\vspace{4cm}
+
+\noindent Kottayam-686635  \hfill (Dr. XYZ)
+
+\noindent April 2026 \hfill Project Supervisor
+
+\clearpage
+
+\begin{center}
+{\large{\bf{ACKNOWLEDGMENT}}}
+\end{center}
+%\thispagestyle{empty}
+
+
+\noindent We thank .......
+
+
+\vspace{4cm}
+\hspace*{\fill}{\large Student Name (Roll No. XXXXXXXXXX)}\\
+\hspace*{\fill}{\large Student Name (Roll No. XXXXXXXXXX)}\\
+\hspace*{\fill}{\large Student Name (Roll No. XXXXXXXXXX)}\\
+\hspace*{\fill}{\large Student Name (Roll No. XXXXXXXXXX)}						 
+
+\clearpage
+
+
+% --------------- Abstract page -----------------------
+\begin{center}
+{\Large{\bf{ABSTRACT}}
+\addcontentsline{toc}{chapter}{Abstract}
+}
+\end{center}
+
+
+The main aim of the project ........
+
+\clearpage
+
+
+
+\tableofcontents
+\clearpage
+
+
+\listoffigures
+\listoftables
+%\nomenclature
+
+
+\newpage
+
+% =========== Main chapters starts here. Type in seperate files and include the filename here. ==
+% ============================
+\pagenumbering{arabic} \setcounter{page}{1}
+
+\input chapter1.tex
+
+\input chapter2.tex
+
+\input conclusion.tex   % Conclusion chapter
+\addcontentsline{toc}{chapter}{References}
+\bibliographystyle{plain}
+\bibliography{bib}
+
+
+
+\end{document}

@@ -21,14 +21,31 @@ import (
 	"github.com/santhoshcheemala/ZKLR/prover"
 )
 
+// autoBatchSize picks the optimal batch size based on machine specs.
+// HPC result: batch=80 was the sweet spot on a 32-core server.
+// Scaled down proportionally for laptops/desktops.
+func autoBatchSize() int {
+	cores := runtime.NumCPU()
+	switch {
+	case cores >= 16:
+		return 80 // HPC / server — confirmed sweet spot
+	case cores >= 8:
+		return 40 // mid-range workstation (8-15 cores)
+	case cores >= 4:
+		return 20 // typical laptop (4-7 cores)
+	default:
+		return 10 // low-end / 2-core machines
+	}
+}
+
 func main() {
-	// CLI flags (hardcoded optimal: batch=80, workers=auto-half-CPU, keys=auto)
-	batchSize := flag.Int("batch", 80, "predictions per proof")
+	// CLI flags — batch=0 means auto-detect from machine specs
+	batchSize := flag.Int("batch", 0, "predictions per proof (0=auto based on CPU cores)")
 	numWorkers := flag.Int("workers", 0, "parallel workers (0=auto: 50% of CPU cores)")
 	keyPoolSize := flag.Int("keys", 0, "key pool size for memory control (0=auto, max 16)")
 	datasetPath := flag.String("dataset", "data/test_200.csv", "CSV file path")
-	weightsFlag := flag.String("weights", "0.02638518204922373,0.02298176404030624,0.024034825597816466,0.024289043576076152", "comma-separated model weights")
-	biasFlag := flag.Float64("bias", -4.894930414628542, "model bias")
+	weightsFlag := flag.String("weights", "", "comma-separated model weights (required)")
+	biasFlag := flag.Float64("bias", 0.0, "model bias")
 	flag.Parse()
 
 	weightStrs := strings.Split(*weightsFlag, ",")
@@ -43,14 +60,19 @@ func main() {
 	}
 	bias := *biasFlag
 
-	// Validate hardcoded 4-feature model
-	if len(weights) != 4 {
-		fmt.Fprintf(os.Stderr, "Error: hardcoded model expects 4 weights, got %d\n", len(weights))
+	// Validate that weights were provided
+	if *weightsFlag == "" {
+		fmt.Fprintf(os.Stderr, "Error: -weights flag is required (comma-separated floats, one per feature)\n")
 		os.Exit(1)
 	}
 
+	if *batchSize == 0 {
+		*batchSize = autoBatchSize()
+		fmt.Printf("  [auto] Detected %d CPU cores → batch=%d\n", runtime.NumCPU(), *batchSize)
+	}
+
 	if *numWorkers == 0 {
-		// Use 50% of available cores for HPC optimization
+		// Use 50% of available cores (HPC-tuned)
 		*numWorkers = runtime.NumCPU() / 2
 		if *numWorkers < 1 {
 			*numWorkers = 1
@@ -197,9 +219,8 @@ func main() {
 	// ─── Phase 6: Export ─────────────────────────────────
 	exportBatchResults(batchResults, testData, accuracy, setup, predTotal, totalProve, totalVerify, *numWorkers)
 	fmt.Println("\n    Results saved → results/batch_prediction_results.txt")
-	fmt.Println("\n✅ Done!")
-}
 
+}
 // ─── CSV Loading ─────────────────────────────────────────────
 
 type sample struct {

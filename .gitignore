@@ -1,10 +1,10 @@
 # Generated/ignored files for ZKLR
 
-# Compiled binaries
-batch_predict
-predict
-benchmark
-export
+# Compiled binaries (root-level only, not source dirs)
+/batch_predict
+/predict
+/benchmark
+/export
 
 # Circuit cache and keys
 *.cache

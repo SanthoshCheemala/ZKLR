@@ -1,0 +1,44 @@
+\chapter{Introduction}
+
+Modern machine learning systems are increasingly embedded in sensitive decision-making pipelines such as healthcare diagnostics, fraud detection, cybersecurity monitoring, financial risk assessment, and identity verification. As these models grow in influence, the need for verifiable and trustworthy outputs becomes critical. In many practical deployments, a client interacts with a remote model via an API or cloud service without access to the underlying parameters or computation process. This lack of transparency raises concerns regarding trust, fairness, and correctness, especially when decisions directly impact user safety, financial transactions, or regulatory compliance~\cite{lavin2024surveyapplicationszeroknowledgeproofs}.
+
+Zero-Knowledge Proofs (ZKPs) offer a cryptographic solution to these challenges by enabling verifiable computations without revealing internal model details. This thesis explores how ZKPs can be applied to logistic regression to enable privacy-preserving verifiable predictions and accuracy reporting~\cite{cryptoeprint:2025/507}.
+
+\section{Background}
+
+Zero-Knowledge Proofs, formalized by Goldwasser, Micali, and Rackoff~\cite{goldwasser1989knowledge}, are cryptographic protocols that allow a prover to convince a verifier that a statement is correct without revealing any additional information beyond its correctness. A ZKP system satisfies three essential properties:\newline
+\textbf{Completeness}: an honest prover always convinces the verifier;  
+\newline \textbf{Soundness}: a dishonest prover cannot produce a valid proof for a false statement except with negligible probability;  
+\newline \textbf{Zero-knowledge}: the proof leaks no information about secret values or intermediate computations.
+
+These properties make ZKPs ideal for machine learning environments where revealing the model structure, parameters, or training data would be undesirable or unsafe. In particular, ZKPs enable verifiable inference and evaluation without compromising confidentiality~\cite{cryptoeprint:2023/1345}.
+
+\section{Motivation}
+
+Machine learning models are often viewed as valuable intellectual property. Providers must protect model weights from extraction attacks while ensuring that clients can trust the predictions. Meanwhile, end-users increasingly demand transparency and verifiability, especially in domains where decisions require justification or compliance guarantees~\cite{article}.
+
+Traditional approaches to verification may require sharing internal model parameters, openly exposing datasets, or depending on a trusted auditor—all of which compromise privacy. ZKPs remove the need for trust by enabling the prover to demonstrate correct computation while keeping all sensitive information hidden~\cite{kates2020plonk}.
+
+Thus, the motivation behind this work is twofold:  
+(1) to allow clients to validate predictions without accessing the model internals, and  
+(2) to preserve the confidentiality of model weights, inputs, and intermediate results while maintaining provable correctness.
+
+\section{Problem Statement}
+
+Existing verification mechanisms for machine learning models suffer from limitations such as revealing sensitive parameters, dataset exposure, or dependency on trusted third parties. These limitations pose significant risks, including model extraction, information leakage, and unfair evaluation~\cite{10.1145/3372297.3417278}.  
+
+Therefore, the core problem addressed in this thesis is:
+
+\begin{quote}
+\textit{How can Zero-Knowledge Proofs be used to design an efficient privacy-preserving framework for logistic regression that allows verifiable predictions and accuracy validation without revealing model parameters or sensitive data?}
+\end{quote}
+
+\section{Project Scope}
+
+This thesis focuses on the development of a practical zero-knowledge framework for verifying logistic regression Prediction and Accuracy. The work begins with designing arithmetic circuits that efficiently capture the computation of logistic regression while remaining compatible with the constraints of a PLONK-based proof system~\cite{gennaro2013quadratic}. We implement the non-linear sigmoid activation using a lookup-table mechanism optimized to maintain accuracy while ensuring computational tractability within the zero-knowledge proof system~\cite{cryptoeprint:2025/507}. Zero-knowledge proofs are generated using GNARK’s PLONK backend, which provides an efficient proving system supported by modern cryptographic primitives~\cite{gnark-v0.14.0}.  
+
+The system is evaluated in terms of proving time, verification time proof size and communication time ~\cite{info15080463} Facilitating a comprehensive performance evaluation. Finally, the implementation demonstrates how correct predictions and accuracy reports can be verified securely in a lightweight and Protect the model sensitive parameters, making it suitable for real-world deployment scenarios.
+
+The integration of these components enables the development of a privacy-preserving verification framework for classical machine learning inference. Our results indicate promising directions for extending zero-knowledge proof methodologies to handle more sophisticated model architectures and address the scalability requirements of practical deployments~\cite{cryptoeprint:2023/1174}.
+
+\clearpage

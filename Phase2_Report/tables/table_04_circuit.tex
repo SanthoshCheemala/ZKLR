@@ -1,0 +1,20 @@
+\begin{table}[H]
+\centering
+\caption{Circuit Architecture Components}
+\label{tab:circuit}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Component} & \textbf{Design Choice} & \textbf{Rationale} \\
+\hline
+Proof System        & PLONK (gnark)          & Supports lookup tables; universal SRS \\
+Curve               & BN254                  & Fast proving; 128-bit security; EVM-native \\
+Scaling             & $2^{32}$ fixed-point   & Float $\to$ integer for finite field compat. \\
+Sigmoid Method      & Lookup table (20,481 entries) & $O(1)$ crypto lookup vs Taylor series \\
+Sigmoid Range       & $\pm 10$ (shifted $+10$) & 37\% smaller table vs $\pm 16$ baseline \\
+Truncation          & Remainder hint ($2^{22}$) & Avoids modular division artifacts \\
+Clamping            & \texttt{api.Cmp} + \texttt{api.Select} & Handles out-of-range $Z$ safely \\
+Feature Support     & Dynamic slices ($N$-feature) & Generalised beyond 2-feature BMI model \\
+Batch Mode          & \texttt{BatchCircuit} wrapper & Amortises setup cost across samples \\
+\hline
+\end{tabular}
+\end{table}

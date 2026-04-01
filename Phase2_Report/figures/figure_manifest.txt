@@ -1,0 +1,16 @@
+ZKLR Phase-2 Report — Figure Manifest
+=============================================
+fig_01_constraints_comparison   — Bar chart: Phase 1 vs Phase 2 circuit constraints
+fig_02_prove_time_comparison    — Bar chart: single-sample prove time comparison
+fig_03_verify_time_comparison   — Bar chart: single-sample verify time comparison
+fig_04_setup_time_comparison    — Bar chart: one-time setup time comparison
+fig_05_overall_improvements     — Bar chart: % improvement across all metrics
+fig_06_batch_prove_time         — Line chart: batch size vs prove time per sample
+fig_07_batch_throughput         — Bar chart: batch size vs throughput
+fig_08_worker_scaling           — Line chart: worker count vs wall-clock time
+fig_09_scalability_curve        — Line chart: sample count vs total time
+fig_10_constraints_by_batch     — Bar chart: constraints per batch size
+fig_11_bn254_vs_bls377          — Grouped bar chart: curve comparison
+fig_12_proof_size_constant      — Horizontal line chart: constant proof size
+fig_13_sigmoid_precision        — Error plot: lookup approximation accuracy
+fig_14_radar_improvements       — Radar chart: all Phase 2 improvements

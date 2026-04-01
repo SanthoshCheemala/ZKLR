@@ -1,0 +1,13 @@
+# 5-Feature ZK-LR Model Weights
+# Features: age, study_hours, sleep_hours, attendance_pct, prev_score
+# Train accuracy: 75.58%  Test accuracy: 74.60%
+
+weights = -0.04232695012426456,0.2289242246189388,-0.040603009230595656,0.04991542646456064,0.028145240402081887
+bias    = -4.530066986279241
+
+# age: w=-0.0423269501  W_SCALED=-181792867
+# study_hours: w=0.2289242246  W_SCALED=983222058
+# sleep_hours: w=-0.0406030092  W_SCALED=-174388597
+# attendance_pct: w=0.0499154265  W_SCALED=214385124
+# prev_score: w=0.0281452404  W_SCALED=120882887
+# bias: b=-4.5300669863  B_SCALED=-19456489555

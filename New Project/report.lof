@@ -1,0 +1,19 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces ZKLR system architecture showing modular component design}}{15}{figure.caption.4}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces End-to-end proof generation and verification workflow}}{16}{figure.caption.5}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Setup time remains constant across different dataset sizes}}{21}{figure.caption.6}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Proof generation and verification for individual samples}}{22}{figure.caption.7}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Proof generation and verification for batched samples}}{23}{figure.caption.8}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Proof size remains constant at 584 bytes for both individual and batched circuits, demonstrating PLONK's succinctness property}}{26}{figure.caption.9}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Performance comparison showing batched approach achieves 1.6× speedup by reducing proof count from 3,000 to 150}}{26}{figure.caption.10}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Batched approach achieves 2.5 samples per second throughput}}{28}{figure.caption.11}%
+\contentsline {figure}{\numberline {5.4}{\ignorespaces Linear scalability: proving time scales linearly with number of batches while proof size remains constant}}{29}{figure.caption.12}%
+\contentsline {figure}{\numberline {5.5}{\ignorespaces Batch processing times remain consistent with minimal variance across all 150 batches}}{29}{figure.caption.13}%
+\contentsline {figure}{\numberline {5.6}{\ignorespaces Test 1 terminal output showing successful verification of valid proof}}{31}{figure.caption.15}%
+\contentsline {figure}{\numberline {5.7}{\ignorespaces Test 2 terminal output demonstrating detection of tampered proof bytes}}{32}{figure.caption.16}%
+\contentsline {figure}{\numberline {5.8}{\ignorespaces Test 3 terminal output showing rejection of proof with tampered witness values}}{33}{figure.caption.17}%
+\addvspace {10\p@ }

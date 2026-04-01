@@ -1,0 +1,190 @@
+% ============================================================
+% BTP Phase-2 Report: Zero-Knowledge Logistic Regression (ZKLR)
+% Indian Institute of Information Technology Kottayam
+% April 2026
+% ============================================================
+
+\documentclass[12pt,a4wide]{report}
+
+% ── Packages ─────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{amsmath, amssymb}
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{remark}{Remark}[chapter]
+\usepackage{geometry}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{longtable}
+\usepackage{parskip}
+\usepackage{multirow}
+\usepackage[nottoc]{tocbibind}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=red,
+    pdfauthor={Santhosh Cheemala, Shravasti Ohol, Buddala Kamalakar},
+    pdftitle={Design, Implementation, and Evaluation of a Zero-Knowledge Logistic Regression Framework}
+}
+
+\renewcommand{\baselinestretch}{1.5}
+
+% ── Code listing style ────────────────────────────────────────
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{red!70!black},
+}
+
+\begin{document}
+
+% ── Title page ────────────────────────────────────────────────
+\begin{titlepage}
+\begin{center}
+\textbf{\Large DESIGN, IMPLEMENTATION, AND EVALUATION OF A\\
+ZERO-KNOWLEDGE LOGISTIC REGRESSION FRAMEWORK}\\[10pt]
+\vspace{0.8cm}
+A Project Report Submitted \\
+in Partial Fulfilment of the Requirements \\
+for the Degree of \\
+\vspace{2mm}
+{\Large\bf Bachelor of Technology} \\ in \\
+{\large\bf Computer Science and Engineering} \\
+with Specialization in \\
+{\large\bf Cyber Security} \\
+\vspace{2mm}
+{\em by}\\[3pt]
+{\large\bf Santhosh Cheemala \hspace{4mm} (2022BCY0009)} \\
+{\large\bf Shravasti Ohol \hspace{4mm} (2022BCY0012)} \\
+{\large\bf Buddala Kamalakar \hspace{4mm} (2022BCY0050)} \\
+\vspace{0.7cm}
+\includegraphics[width=4.3cm, height=2.2cm]{logo2.jpg}
+{\em\large to}\\
+{\bf DEPARTMENT OF CSE-CYBER SECURITY}\\
+{\bf INDIAN INSTITUTE OF INFORMATION TECHNOLOGY}\\
+{\bf KOTTAYAM-686635, INDIA}\\[10pt]
+{\it April 2026}
+\end{center}
+\end{titlepage}
+
+\clearpage
+
+% ── Declaration ───────────────────────────────────────────────
+\pagenumbering{roman} \setcounter{page}{2}
+\begin{center}
+{\large\bf DECLARATION}
+\end{center}
+
+\noindent We, \textbf{Santhosh Cheemala} (2022BCY0009), \textbf{Shravasti Ohol} (2022BCY0012), and \textbf{Buddala Kamalakar} (2022BCY0050), hereby declare that this report entitled \emph{``Design, Implementation, and Evaluation of a Zero-Knowledge Logistic Regression Framework''} submitted to the Indian Institute of Information Technology Kottayam towards partial requirement of the \textbf{Bachelor of Technology} in Computer Science and Engineering with specialization in \textbf{Cyber Security} is an original work carried out by us under the supervision of \textbf{Dr. S. Jai Ganesh} and has not formed the basis for the award of any degree or diploma in this or any other institution. We have sincerely tried to uphold academic ethics and honesty. Whenever external information, statements, or results are used, they have been duly acknowledged and cited.
+
+\vspace*{4cm}
+
+\begin{minipage}{0.45\textwidth}
+    \raggedright
+    \textbf{Kottayam-686635} \\[0.5cm]
+    \textbf{April 2026}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.45\textwidth}
+    \raggedleft
+    \textbf{Santhosh Cheemala} \\[1cm]
+    \textbf{Shravasti Ohol} \\[1cm]
+    \textbf{Buddala Kamalakar}
+\end{minipage}
+
+\clearpage
+
+% ── Certificate ───────────────────────────────────────────────
+\begin{center}
+{\large\bf CERTIFICATE}
+\end{center}
+
+\noindent This is to certify that the work contained in this project report entitled \textbf{``Design, Implementation, and Evaluation of a Zero-Knowledge Logistic Regression Framework''} submitted by \textbf{Santhosh Cheemala}, \textbf{Shravasti Ohol}, and \textbf{Buddala Kamalakar} to the Indian Institute of Information Technology Kottayam towards partial requirement of the Bachelor of Technology in Computer Science and Engineering with specialization in Cyber Security has been carried out by them under my supervision and has not been submitted elsewhere for the award of any degree.
+
+\vspace{4cm}
+
+\noindent Kottayam-686635 \hfill \textbf{Dr. S. Jai Ganesh}
+
+\noindent April 2026 \hfill Project Supervisor
+
+\clearpage
+
+% ── Acknowledgement ───────────────────────────────────────────
+\begin{center}
+{\large\bf ACKNOWLEDGEMENT}
+\end{center}
+
+\noindent We express our sincere gratitude to our project supervisor, \textbf{Dr. S. Jai Ganesh}, for his continuous guidance, insightful feedback, and unwavering support throughout both phases of this project. His expertise in cryptography and secure systems was invaluable in shaping the theoretical foundations and practical implementation of the ZKLR framework.
+
+We thank the Department of CSE-Cyber Security at IIIT Kottayam for providing the computational resources and academic environment that made this research possible. We also acknowledge the open-source contributions of the \texttt{gnark} team at ConsenSys, whose zero-knowledge proof library formed the backbone of our implementation.
+
+Finally, we thank our families and peers for their encouragement throughout this journey.
+
+\vspace{3cm}
+\hspace*{\fill}{\large Santhosh Cheemala (2022BCY0009)}\\
+\hspace*{\fill}{\large Shravasti Ohol (2022BCY0012)}\\
+\hspace*{\fill}{\large Buddala Kamalakar (2022BCY0050)}
+
+\clearpage
+
+% ── Abstract ──────────────────────────────────────────────────
+\begin{center}
+{\Large\bf ABSTRACT}
+\addcontentsline{toc}{chapter}{Abstract}
+\end{center}
+
+The growing reliance on machine learning (ML) models in privacy-sensitive domains such as healthcare, finance, and cyber security has intensified the demand for trustworthy, verifiable, and privacy-preserving inference systems. This project presents ZKLR, a Zero-Knowledge Logistic Regression framework that enables a model owner to cryptographically prove the correctness of predictions without revealing sensitive model weights or training data.
+
+\textbf{Phase 1} established the foundational ZKLR pipeline using PLONK-SNARKs on the BN254 elliptic curve, implemented via the \texttt{gnark} Go library. The framework encodes logistic regression as an arithmetic circuit with a sigmoid activation handled by a pre-computed 32,769-entry lookup table, achieving a constant proof size of 584 bytes regardless of the number of input features.
+
+\textbf{Phase 2} introduces three major optimizations. First, the sigmoid lookup table range was tightened from $\pm16$ to $\pm10$, reducing circuit constraints by 32\% (from 159,804 to 114,219), compile time by 34\%, and setup time by 47\%. Second, a parallelized batch proving architecture was introduced, amortizing setup costs across datasets of any size and achieving a 2.2$\times$ wall-clock speedup over sequential proving for 100-sample datasets. Third, the circuit was generalized to support $N$-feature logistic regression models natively through dynamic slice-based constraint generation. A smart contract integration design was also documented, demonstrating how the 584-byte BN254 PLONK proofs can be verified on-chain via an auto-exported Solidity verifier contract.
+
+Experimental evaluation on an Apple Silicon M-series laptop demonstrates a wall-clock proving speed of 0.917 seconds per sample (batch=40, 77\% classification accuracy), establishing ZKLR as a viable framework for privacy-preserving ML inference in resource-constrained environments.
+
+\clearpage
+
+% ── TOC / LOF / LOT ──────────────────────────────────────────
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\clearpage
+
+% ── Main Chapters ─────────────────────────────────────────────
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{ch01_introduction.tex}
+\input{ch02_literature.tex}
+\input{ch03_problem.tex}
+\input{ch04_architecture.tex}
+\input{ch05_implementation.tex}
+\input{ch06_experiments.tex}
+\input{ch07_results.tex}
+\input{ch08_discussion.tex}
+\input{ch09_applications.tex}
+\input{ch10_future.tex}
+\input{ch11_conclusion.tex}
+
+% ── Bibliography ─────────────────────────────────────────────
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

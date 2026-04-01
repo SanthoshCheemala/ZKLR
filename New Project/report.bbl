@@ -1,0 +1,97 @@
+\begin{thebibliography}{10}
+
+\bibitem{boakye2025105887}
+Nancy~Fosua Boakye, Ciarán~Courtney O'Toole, Amirhossein Jalali, and Ailish
+  Hannigan.
+\newblock Comparing logistic regression and machine learning for obesity risk
+  prediction: A systematic review and meta-analysis.
+\newblock {\em International Journal of Medical Informatics}, 199:105887, 2025.
+
+\bibitem{gnark-v0.14.0}
+Gautam Botrel, Thomas Piellard, Youssef~El Housni, Ivo Kubjas, and Arya Tabaie.
+\newblock Consensys/gnark: v0.14.0.
+\newblock Zenodo, June 2025.
+\newblock Version v0.14.0.
+
+\bibitem{info15080463}
+Mohammed El-Hajj and Bjorn Oude~Roelink.
+\newblock Evaluating the efficiency of zk-snark, zk-stark, and bulletproof in
+  real-world scenarios: A benchmark study.
+\newblock {\em Information}, 15(8), 2024.
+
+\bibitem{kates2020plonk}
+Ariel Gabizon, Zachary~J. Williamson, and Oana Ciobotaru.
+\newblock Plonk: Permutations over lagrange-bases for oecumenical
+  noninteractive arguments of knowledge.
+\newblock Cryptology ePrint Archive, Paper 2019/953, 2020.
+
+\bibitem{cryptoeprint:2023/1345}
+Sanjam Garg, Aarushi Goel, Somesh Jha, Saeed Mahloujifar, Mohammad Mahmoody,
+  Guru-Vamsi Policharla, and Mingyuan Wang.
+\newblock Experimenting with zero-knowledge proofs of training.
+\newblock Cryptology {ePrint} Archive, Paper 2023/1345, 2023.
+
+\bibitem{gennaro2013quadratic}
+Rosario Gennaro, Craig Gentry, and Bryan Parno.
+\newblock Quadratic span programs and succinct nizks without pcps.
+\newblock In {\em EUROCRYPT 2013}, pages 626--645. Springer, 2013.
+
+\bibitem{goldwasser1989knowledge}
+Shafi Goldwasser, Silvio Micali, and Charles Rackoff.
+\newblock The knowledge complexity of interactive proof systems.
+\newblock {\em SIAM Journal on Computing}, 18(1):186--208, 1989.
+
+\bibitem{cryptoeprint:2025/507}
+Meng Hao, Hanxiao Chen, Hongwei Li, Chenkai Weng, Yuan Zhang, Haomiao Yang, and
+  Tianwei Zhang.
+\newblock Scalable zero-knowledge proofs for non-linear functions in machine
+  learning.
+\newblock Cryptology {ePrint} Archive, Paper 2025/507, 2025.
+
+\bibitem{hosmer2013applied}
+David~W Hosmer, Stanley Lemeshow, and Rodney~X Sturdivant.
+\newblock {\em Applied Logistic Regression}.
+\newblock Wiley, 2013.
+
+\bibitem{lavin2024surveyapplicationszeroknowledgeproofs}
+Ryan Lavin, Xuekai Liu, Hardhik Mohanty, Logan Norman, Giovanni Zaarour, and
+  Bhaskar Krishnamachari.
+\newblock A survey on the applications of zero-knowledge proofs, 2024.
+
+\bibitem{cryptoeprint:2021/673}
+Tianyi Liu, Xiang Xie, and Yupeng Zhang.
+\newblock {zkCNN}: Zero knowledge proofs for convolutional neural network
+  predictions and accuracy.
+\newblock Cryptology {ePrint} Archive, Paper 2021/673, 2021.
+
+\bibitem{unknown}
+Filippo Scaramuzza, Giovanni Quattrocchi, and Damian Tamburri.
+\newblock Engineering trustworthy machine-learning operations with
+  zero-knowledge proofs, 05 2025.
+
+\bibitem{cryptoeprint:2023/1174}
+Haochen Sun, Tonghe Bai, Jason Li, and Hongyang Zhang.
+\newblock {zkDL}: Efficient zero-knowledge proofs of deep learning training.
+\newblock Cryptology {ePrint} Archive, Paper 2023/1174, 2023.
+
+\bibitem{cryptoeprint:2021/730}
+Chenkai Weng, Kang Yang, Xiang Xie, Jonathan Katz, and Xiao Wang.
+\newblock Mystique: Efficient conversions for zero-knowledge proofs with
+  applications to machine learning.
+\newblock Cryptology {ePrint} Archive, Paper 2021/730, 2021.
+
+\bibitem{article}
+Zhibo Xing, Zijian Zhang, Ziang Zhang, Zhen Li, Meng Li, Jiamou Liu, Zongyang
+  Zhang, Yi~Zhao, Qi~Sun, Liehuang Zhu, and Giovanni Russello.
+\newblock Zero-knowledge proof-based verifiable decentralized machine learning
+  in communication network: A comprehensive survey.
+\newblock {\em IEEE Communications Surveys \& Tutorials}, PP:1--1, 01 2025.
+
+\bibitem{10.1145/3372297.3417278}
+Jiaheng Zhang, Zhiyong Fang, Yupeng Zhang, and Dawn Song.
+\newblock Zero knowledge proofs for decision tree predictions and accuracy.
+\newblock In {\em Proceedings of the 2020 ACM SIGSAC Conference on Computer and
+  Communications Security}, CCS '20, page 2039–2053, New York, NY, USA, 2020.
+  Association for Computing Machinery.
+
+\end{thebibliography}

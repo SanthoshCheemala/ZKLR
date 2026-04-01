@@ -1,0 +1,70 @@
+  [auto] Detected 8 CPU cores → batch=40
+============================================================
+  ZK-LR — Batch Parallel Prediction Pipeline
+============================================================
+  Dataset:    data/public_100.csv
+  Batch size: 40
+  Workers:    4 (CPUs: 8)
+
+[1] Batch Setup (compile → SRS → keys)...
+[90m16:23:22[0m [32mINF[0m [1mcompiling circuit[0m
+[90m16:23:22[0m [32mINF[0m [1mparsed circuit inputs[0m [36mnbPublic=[0m200 [36mnbSecret=[0m85
+[90m16:23:23[0m [32mINF[0m [1mbuilding constraint builder[0m [36mnbConstraints=[0m542608
+[90m16:23:23[0m DBG fetching SRS from mem cache [36mcurve=[0mbn254 [36mkey=[0mkzgsrs-bn254-1048579 [36mpackage=[0mkzgsrs [36msize=[0m1048579
+[90m16:23:23[0m DBG SRS not found in mem cache [36mcurve=[0mbn254 [36mpackage=[0mkzgsrs [36msize=[0m1048579
+[90m16:23:23[0m DBG SRS not found in cache, generating [36mcurve=[0mbn254 [36mpackage=[0mkzgsrs [36msize=[0m1048579
+    [cache saved] Keys written to results
+    Constraints:   542608
+    Compile time:  419.828583ms
+    Setup time:    23.45590775s
+    PK size:       65569.7 KB
+    VK size:       33.6 KB
+    Total:         27.339872917s
+
+[2] Loading dataset...
+    Loaded 100 samples
+
+[3] Running batch parallel predictions...
+    Batches: 3 (size=40, workers=4, keys=4)
+    Memory: 256 MB for key pool (64.0 MB × 4 copies)
+[90m16:24:00[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m425.284208
+[90m16:24:00[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m525.239125
+[90m16:24:00[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m529.797916
+[90m16:25:04[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m64976.883084
+[90m16:25:05[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m202.2435
+[90m16:25:15[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m75678.5595
+[90m16:25:15[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m133.905667
+[90m16:25:21[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m82031.34075
+[90m16:25:21[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m23.908667
+
+[4] Results
+    ┌────────┬──────────┬────────┬──────────────┬──────────────┬──────────┐
+    │ Batch  │ Samples  │ Status │ Prove Time   │ Verify Time  │ Proof    │
+    ├────────┼──────────┼────────┼──────────────┼──────────────┼──────────┤
+    │      0 │       40 │      ✓ │      1m5.56s │    205.544ms │  584 B   │
+    │      1 │       40 │      ✓ │    1m22.031s │     25.584ms │  584 B   │
+    │      2 │       20 │      ✓ │    1m15.679s │    134.001ms │  584 B   │
+    └────────┴──────────┴────────┴──────────────┴──────────────┴──────────┘
+
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            100
+    Batches:            3 (size=40)
+    Workers:            4
+    Correct:            77 / 100
+    Accuracy:           77.00%
+    ───────────────────────────────────────────────
+    Setup time:         27.339872917s
+    Total predict time: 1m31.679025084s
+    Total prove time:   3m43.271069667s (sequential sum)
+    Total verify time:  365.129084ms
+    Avg prove/batch:    1m14.423689889s
+    Avg prove/sample:   2.233s
+    Wall-clock/sample:  0.917s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  2.2x
+    ═══════════════════════════════════════════════
+
+    Results saved → results/batch_prediction_results.txt
+
+✅ Done!

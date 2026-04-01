@@ -1,0 +1,160 @@
+% Uncomment the line below if you want fast compilation without images.
+% \documentclass[12pt,a4wide,draft]{report}
+
+\documentclass[12pt,a4wide]{report}
+
+% ---------------- Packages ----------------
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{amsmath, amssymb}
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{remark}{Remark}[chapter]
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% For bibliography in ToC
+\usepackage[nottoc]{tocbibind}
+
+% Hyperref MUST be loaded last
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=red,
+    pdfauthor={Santhosh Cheemala, Shravasti Ohol, Buddala Kamalakar},
+    pdftitle={Zero Knowledge Proofs for Logistic Regression}
+}
+
+% ---------------- Document Formatting ----------------
+\renewcommand{\baselinestretch}{1.5}
+
+\begin{document}
+
+% --------------- Title page -----------------------
+\begin{titlepage}
+\begin{center}
+
+% Reduce vertical spaces for better fit on title page
+%\vspace*{-1cm}
+
+\textbf{\Large Zero Knowledge Proofs for Logistic Regression Predictions and Accuracy}\\[10pt]
+\vspace*{0.8cm}
+A Project Report Submitted \\ in Partial Fulfilment of the Requirements  \\ for the Degree of \\ 
+\vspace{2mm}
+{\Large\bf Bachelor of Technology} \\ in \\ {\large\bf Computer Science and Engineering} \\ with Specialization in \\ {\large\bf Cyber Security} \\ 
+
+\vspace{2mm}
+{\em by} \\[3pt]
+
+{\large\bf Santhosh Cheemala - 2022BCY0009} \\ {\large\bf Shravasti Ohol - 2022BCY0012} \\ {\large\bf Buddala Kamalakar - 2022BCY0050} \\ 
+
+\vspace{0.7cm}
+\includegraphics[width=4.3cm, height=2.2cm]{logo2.jpg}
+
+{\em\large to}\\
+{\bf DEPARTMENT OF CSE-CYBER SECURITY}\\
+{\bf INDIAN INSTITUTE OF INFORMATION TECHNOLOGY}\\
+{\bf KOTTAYAM-686635, INDIA}\\[10pt]
+{\it November 2025}
+
+\end{center}
+\end{titlepage}
+
+\clearpage
+
+% --------------- Declaration page -----------------------
+\pagenumbering{roman} \setcounter{page}{2}
+\begin{center}
+{\large\bf DECLARATION}
+\end{center}
+
+\noindent We, \textbf{Santhosh Cheemala} (2022BCY0009), \textbf{Shravasti Ohol} (2022BCY0012), and \textbf{Buddala Kamalakar} (2022BCY0050), hereby declare that, this report entitled “Zero Knowledge Proofs for Logistic Regression Predictions and Accuracy” submitted to Indian Institute of Information Technology Kottayam towards partial requirement of Bachelor of Technology in Computer Science and Engineering with specialization in Cyber Security is an original work carried out by us under the supervision of \textbf{Dr. S. Jai Ganesh} and has not formed the basis for the award of any degree or diploma, in this or any other institution or university. We have sincerely tried to uphold the academic ethics and honesty. Whenever an external information or statement or result is used then, that have been duly acknowledged and cited.
+
+\vspace*{4cm}
+
+\begin{minipage}{0.45\textwidth}
+    \raggedright
+    \textbf{Kottayam-686635} \\[0.5cm]
+    \textbf{November 2025}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.45\textwidth}
+    \raggedleft
+    \textbf{Santhosh Cheemala} \\[1cm]
+    \textbf{Shravasti Ohol} \\[1cm]
+    \textbf{Buddala Kamalakar}
+\end{minipage}
+
+
+\clearpage
+
+% --------------- Certificate page -----------------------
+\begin{center}
+{\large\bf CERTIFICATE}
+\end{center}
+
+\noindent This is to certify that the work contained in this project report entitled \textbf{“Zero Knowledge Proofs for Logistic Regression Predictions and Accuracy”} submitted by \textbf{Santhosh Cheemala}, \textbf{Shravasti Ohol}, and \textbf{Buddala Kamalakar} to the Indian Institute of Information Technology Kottayam towards partial requirement of Bachelor of Technology in Computer Science and Engineering with specialization in Cyber Security has been carried out by them under my supervision and that it has not been submitted elsewhere for the award of any degree.
+
+\vspace{4cm}
+
+\noindent Kottayam-686635 \hfill \textbf{Dr. S. Jai Ganesh}
+
+\noindent November 2025 \hfill Project Supervisor
+
+\clearpage
+
+% --------------- Abstract page -----------------------
+\begin{center}
+{\Large\bf ABSTRACT}
+\end{center}
+
+The growing reliance on machine learning models in sensitive domains such as healthcare, finance, and cyber security has increased the need for trustworthy and privacy-preserving prediction systems. Traditional verification methods expose confidential model parameters and data, raising concerns about security and intellectual property. To address these challenges, we have proposed a Zero-Knowledge Proof (ZKP) framework for verifying logistic regression predictions and model accuracy without revealing sensitive information.
+
+Our approach leverages PLONK-SNARK, a modern ZKP protocol, to construct arithmetic circuits representing logistic regression computations. The framework securely encodes the model’s weights and bias as secret inputs, enabling a verifier to confirm the correctness of predictions and accuracy metrics without accessing the underlying data. Non-linear functions such as the sigmoid are efficiently handled through lookup tables, significantly reducing computational overhead while maintaining soundness.
+
+Our system ensures data confidentiality, model privacy, and verifiable inference in a decentralized setting. The implementation, developed using the GNARK library in Go, supports batch verification for scalable performance across datasets.
+
+This framework bridges the gap between machine learning transparency and cryptographic privacy, offering a robust foundation for secure model verification in privacy-critical applications, thus fostering trust, compliance, and accountability in AI-driven decision systems.
+
+% (You can keep your abstract text here—unchanged)
+% -------------------------------------------------------------------------
+
+\clearpage
+
+% --------------- TOC -----------------------
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\clearpage
+
+% --------------- Main Chapters -----------------------
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{chapter1.tex}
+\input{chapter2.tex}
+\input{chapter3.tex}
+\input{chapter4.tex}
+\input{chapter5.tex}
+\input{chapter6.tex}
+\input{chapter7.tex}
+
+% --------------- Bibliography -----------------------
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{bib}
+
+\end{document}

@@ -1,0 +1,97 @@
+\chapter{Theoretical Background}
+
+This chapter presents the theoretical foundations for constructing Zero-Knowledge Proof (ZKP) systems for verifying the  logistic regression predictions and Accuracy. We outline the core concepts including zero-knowledge proofs, arithmetic circuits, polynomial commitment schemes, sigmoid approximation techniques, and logistic regression model formulation.
+
+\section{Zero-Knowledge Proofs}
+
+\begin{definition}\label{def:zkp}
+\textbf{Zero-Knowledge Proof (ZKP):} A ZKP is an interactive or non-interactive cryptographic protocol enabling a prover to convince a verifier that a statement is true, without revealing any additional information beyond the truth of the statement itself~\cite{goldwasser1989knowledge}.
+\end{definition}
+
+A ZKP system satisfies three essential properties:  
+\textbf{Completeness}, where an honest prover convinces the verifier;  
+\textbf{Soundness}, where a cheating prover cannot convince the verifier of a false statement; and  
+\textbf{Zero-Knowledge}, where the proof reveals nothing beyond the validity of the statement.
+
+\begin{remark}
+Modern proof systems such as SNARKs and PLONK extend these principles to arbitrary computations by encoding them as arithmetic circuits~\cite{kates2020plonk}.
+\end{remark}
+
+\section{Arithmetic Circuits and Constraint Systems}
+
+\begin{definition}\label{def:circuits}
+\textbf{Arithmetic Circuit:} An arithmetic circuit represents a computation using addition and multiplication gates over a finite field, enabling structured modeling of machine learning computations within zero-knowledge systems~\cite{gennaro2013quadratic}.
+\end{definition}
+
+For a computation $f(x, w) = y$, the circuit expresses:
+\begin{equation}
+\text{Constraints}(x, w) = 0,
+\end{equation}
+where $x$ denotes public inputs and $w$ represents private witness values.
+
+\begin{remark}
+Arithmetic circuits form the foundation for expressing logistic regression operations, including linear transformations and sigmoid approximations, within ZK systems.
+\end{remark}
+
+\section{Polynomial Commitment Schemes}
+
+\begin{definition}\label{def:polycommit}
+\textbf{Polynomial Commitment Scheme:} A cryptographic primitive that allows a prover to commit to a polynomial and later prove evaluations at specific points without revealing the polynomial itself~\cite{kates2020plonk}.
+\end{definition}
+
+The commitment is represented as:
+\begin{equation}
+    C = \text{Commit}(f(x)),
+\end{equation}
+and the prover later provides
+\[
+\text{Proof}(k, f(k)),
+\]
+allowing the verifier to confirm correctness without accessing the entire polynomial.
+
+\begin{remark}
+Polynomial commitments enable succinct verification and efficient batching of constraints, essential for scalability in proof systems.
+\end{remark}
+
+\section{Sigmoid Function and Approximation}
+
+\begin{definition}\label{def:sigmoid}
+\textbf{Sigmoid Function:} The sigmoid function in logistic regression is defined as:
+\begin{equation}
+    \sigma(z) = \frac{1}{1 + e^{-z}}.
+\end{equation}
+\end{definition}
+
+Direct computation of $\sigma(z)$ is expensive within ZKP systems because of the exponential and division operations. Hence, approximation methods are employed~\cite{cryptoeprint:2025/507}.
+
+Common ZKP-friendly approximations include:
+\begin{itemize}
+    \item Piecewise linear approximation,
+    \item Polynomial approximation (e.g., Taylor or Chebyshev series),
+    \item Lookup-table-based approximation.
+\end{itemize}
+
+\begin{remark}
+Lookup-table-based approximations significantly reduce circuit complexity and proving time while maintaining adequate numerical precision.
+\end{remark}
+
+\section{Logistic Regression Model}
+
+\begin{definition}\label{def:logreg}
+\textbf{Logistic Regression:} A statistical model for binary classification that maps input features to probabilities using:
+\begin{equation}
+    z = w^T x + b,
+\end{equation}
+where $w$ is the weight vector, $x$ is the input vector, and $b$ is the bias term~\cite{hosmer2013applied}.
+\end{definition}
+
+The predicted probability is calculated using the sigmoid function:
+\begin{equation}\label{eq:prediction}
+\widehat{y} = \sigma(z) = \frac{1}{1 + e^{-z}}.
+\end{equation}
+
+\begin{remark}
+Within a ZKP framework, computing $z$ is straightforward using arithmetic circuits, while evaluating $\sigma(z)$ requires approximation optimizations to balance efficiency and accuracy~\cite{cryptoeprint:2023/1174}.
+\end{remark}
+
+\clearpage

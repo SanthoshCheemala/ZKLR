@@ -23,7 +23,6 @@ import (
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/plonk"
-	cs "github.com/consensys/gnark/constraint/bn254"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/frontend/cs/scs"
 	"github.com/consensys/gnark/test"
@@ -158,15 +157,17 @@ func TestMetricsReport(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	r1cs := ccs.(*cs.SparseR1CS)
 	nbConstraints := ccs.GetNbConstraints()
-	nbVariables := r1cs.GetNbInternalVariables() + r1cs.GetNbPublicVariables() + r1cs.GetNbSecretVariables()
+	nbSecret := ccs.GetNbSecretVariables()
+	nbPublic := ccs.GetNbPublicVariables()
+	nbInternal := ccs.GetNbInternalVariables()
+	nbVariables := nbInternal + nbPublic + nbSecret
 
 	t.Logf("  Constraints:      %d", nbConstraints)
 	t.Logf("  Variables:        %d", nbVariables)
-	t.Logf("  Public inputs:    %d", r1cs.GetNbPublicVariables())
-	t.Logf("  Secret inputs:    %d", r1cs.GetNbSecretVariables())
-	t.Logf("  Internal vars:    %d", r1cs.GetNbInternalVariables())
+	t.Logf("  Public inputs:    %d", nbPublic)
+	t.Logf("  Secret inputs:    %d", nbSecret)
+	t.Logf("  Internal vars:    %d", nbInternal)
 	t.Logf("  Compile time:     %v", compileTime)
 
 	// 2. Setup

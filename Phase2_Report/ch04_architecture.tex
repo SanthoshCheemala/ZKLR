@@ -1,0 +1,39 @@
+\chapter{System Architecture}
+
+The ZKLR framework is designed to abstract the cryptographic complexities underlying zero-knowledge proofs and expose a seamless interface for Machine Learning inference. To achieve scalability and production readiness, the architecture evolved significantly between Phase 1 and Phase 2.
+
+\section{Phase 1: Baseline Architecture}
+The framework developed in Phase 1 rests on three distinct physical layers: the Data Layer, the Cryptographic Logic Layer, and the Proving Engine.
+
+\begin{itemize}
+    \item \textbf{Data Ingestion:} The system reads raw JSON/CSV structured feature vectors alongside the pre-trained logistic regression weights.
+    \item \textbf{Circuit Translation:} We define an arithmetic circuit interface compatible with the \texttt{frontend.API} package. This circuit encodes the mathematical constraints corresponding to $Z = W \cdot X + B$.
+    \item \textbf{Proving Engine:} We rely on the PLONK proving scheme instantiated over the BN254 elliptic curve. Phase 1 utilized a purely sequential processing model where each data row was individually compiled, assigned to a witness, and passed to the prover.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/BTP_System Architecture Final.png}
+    \caption{Phase 1 Baseline ZKLR System Architecture}
+    \label{fig:p1_arch}
+\end{figure}
+
+\section{Phase 2: Optimized Batch Architecture}
+In Phase 2, the primary architectural goal was high-throughput processing. While generating a single cryptographic proof offline is acceptable for conceptual research, commercial ML endpoints process thousands of requests simultaneously. 
+
+To resolve this, the architecture was expanded into a \textbf{Batch Parallel Proving Pipeline}.
+
+\subsection{Worker-Pool Concurrency}
+Instead of processing inference requests sequentially, the Phase 2 architecture groups incoming prediction requests into fixed-size batches (e.g., 20 or 40 samples per batch). 
+
+A central Go dispatcher reads the dataset and subdivides the rows into $K$ batch tasks. The system initializes a worker pool comprising $W$ independent Goroutines. Each worker is injected with cloned copies of the non-thread-safe Cryptographic Keys (the Proving and Verification keys) to prevent memory race conditions. 
+
+The theoretical benefit is near-linear scaling up to the memory bandwidth limits of the host hardware. Workers operate autonomously: they assign their slice of the data to a witness, synthesize the constraints into a PLONK proof, and write the verified \texttt{BatchPredResult} payload directly into a concurrent results channel.
+
+\subsection{Generalized Circuit Architecture}
+To make the architecture agnostic to the underlying dataset domain, Phase 2 eliminated hard-coded feature arrays (which bound Phase 1 to a specific 2-feature Body Mass Index model). The circuit architecture now dynamically allocates constraints based on dynamic Go slices. If a 100-feature ML model is passed to the dispatcher, the circuit dynamically expands the dot-product accumulator constraints at runtime, generating a universal proof without code recompilation.
+
+\section{Smart Contract Verification Layer}
+A critical requirement for decentralized ML is ensuring that the generated proofs can be verified on an immutable ledger. The final architectural component introduced in Phase 2 is the Verification Export layer.
+
+Using gnark's solidity backend, the framework auto-generates a valid \texttt{Verifier.sol} smart contract corresponding exactly to the active circuit's topology. The architecture allows an ML seller to act as the Prover (retaining secret weights off-chain) and push only the 584-byte PLONK proof alongside the public inference inputs to the blockchain.

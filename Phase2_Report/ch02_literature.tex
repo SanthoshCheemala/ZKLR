@@ -1,0 +1,20 @@
+\chapter{Literature Survey}
+
+The intersection of cryptography and machine learning has garnered significant research interest, particularly concerning the privacy and verifiability of deployed models. Zero-Knowledge Proofs (ZKPs) provide a compelling primitive for these challenges.
+
+\section{Zero-Knowledge Proof Systems}
+The foundation of modern ZKPs rests on non-interactive arguments of knowledge (zk-SNARKs). Early constructions like Pinocchio and Groth16 required a trusted setup per circuit, which posed significant logistical and security challenges for deploying multiple complex models~\cite{gennaro2013quadratic}. 
+
+The introduction of PLONK (Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge) by Gabizon, Williamson, and Ciobotaru in 2019 revolutionized the space by offering a universal and updatable trusted setup~\cite{kates2020plonk}. This means a single structured reference string (SRS) can be used for any circuit up to a certain size bound. Furthermore, PLONK introduced "custom gates" and lookup tables (Plookup), which are mathematically critical for efficiently evaluating non-algebraic functions like the sigmoid activation within a finite field.
+
+\section{Zero-Knowledge Machine Learning (ZK-ML)}
+Applying ZKPs to machine learning (ZK-ML) is an active frontier. Most classical ML models, including logistic regression and deep neural networks, rely heavily on floating-point arithmetic. However, cryptographic circuits operate strictly over prime finite fields.
+
+Recent surveys by Lavin~\cite{lavin2024surveyapplicationszeroknowledgeproofs} outline the primary bottleneck in ZK-ML: approximating non-linear activation functions without exploding the circuit constraint size. Works by Feng et al. have proposed using Taylor series expansions or piecewise polynomial approximations~\cite{cryptoeprint:2023/1345}. While effective for shallow networks, these arithmetic methods degrade either accuracy or performance when implemented as polynomial constraints.
+
+An alternative mechanism is the use of cryptographic lookup tables, as facilitated by the \texttt{gnark} framework's \texttt{logderivlookup} implementation. Lookup tables allow the circuit to replace costly arithmetic polynomial evaluations with an $O(1)$ inclusion check against a pre-computed array of answers.
+
+\section{Scalability and Batch Verification}
+While theoretical ZK-ML frameworks exist, practical deployment often stalls due to proving time latency. A single inference proof on a standard dataset can take several seconds, which is unacceptable for real-time APIs. Recent advances focus on proof aggregation and parallelized proving. Although recursive SNARK aggregation offers theoretical constant-size proofs for massive data streams~\cite{cryptoeprint:2023/1174}, the engineering overhead and curve compatibility issues (such as the BLS12-377 to BW6-761 cycle) remain an open challenge in current libraries.
+
+Instead, parallel instance evaluation (batch proving) offers an immediate, scalable engineering solution. By utilizing multi-threaded worker pools in systems like Go, the memory-intensive constraint solving phase can be parallelized, significantly amplifying prediction throughput on modern multi-core architectures such as HPC clusters.

@@ -1,0 +1,56 @@
+\chapter{Implementation Details}
+
+This chapter details the specific cryptographic, mathematical, and software engineering implementations required to scale the Phase 1 prototype into the high-performance Phase 2 architecture.
+
+\section{Circuit Constraint Optimizations}
+As established in Phase 1, Zero-Knowledge circuits compute entirely over integers. The logistic regression sigmoid function is evaluated using an $O(1)$ \texttt{logderivlookup} table. 
+
+\subsection{Reducing the Sigmoid Domain}
+In Phase 1, we implemented the sigmoid lookup table across a domain of $Z \in [-16, +16]$, which required 32,769 precomputed entries. During empirical testing in Phase 2 across multiple datasets, we observed that predictions naturally saturated to 100\% or 0\% well within $Z \in [-10, +10]$.
+
+By truncating the lookup domain and increasing the $Z$-axis shift offset from +16 to +10, we drastically reduced the size of the cryptographic table.
+\begin{itemize}
+    \item \textbf{Old bounds:} $\pm 16 \implies \text{Offset } +16 \implies \text{Size: } \approx 32,769 \text{ entries}$
+    \item \textbf{New bounds:} $\pm 10 \implies \text{Offset } +10 \implies \text{Size: } \approx 20,481 \text{ entries}$
+\end{itemize}
+This implemented constraint reduction dropped the total circuit compilation size by 32\% (from 159k to 114k variables), immediately halving generation times without negatively affecting the prediction accuracy. Out-of-bounds $Z$ values are correctly handled using \texttt{api.Cmp} and \texttt{api.Select} to clamp values precisely to 0 or 1.
+
+\section{Generalizing for $N$-Features}
+Phase 1 utilized statically sized arrays for inputs: \texttt{[2]frontend.Variable}. In Go, array sizes are strict compilation constants, trapping the generic prover strictly to datasets identically matching the dimension count.
+
+In Phase 2, the implementation was refactored using dynamically sized slice headers. The \texttt{Circuit} now receives its length context at runtime:
+\begin{lstlisting}[language=Go]
+type NFeatureCircuit struct {
+    Weights []frontend.Variable
+    Inputs  []frontend.Variable // Dynamically scaled
+    Bias    frontend.Variable
+    Y       frontend.Variable   // Actual output
+}
+\end{lstlisting}
+The dot product constraint accumulation was converted to iterate safely over the slice length. This generalization required adjusting how the \texttt{frontend.Witness} instances map data down into the underlying PLONK engine solver.
+
+\section{Parallel Batch Processing Implementation}
+
+To fully employ High-Performance Compute nodes (HPC) provided by the University, the core prediction loop was rewritten using a Goroutine worker-pool.
+
+\subsection{The Thread-Safety Constraint}
+In \texttt{gnark}, the Proving Keys (PK) and Verification Keys (VK) allocate heavily optimized buffers for polynomial commitments. These buffers are deeply mutable during proof generations and thus \textbf{strictly non-thread-safe}. 
+
+To allow multiple concurrent tasks, the dispatcher loop explicitly clones the \texttt{plonk.ProvingKey} pointer deeply across $W$ copies in memory before distributing tasks.
+\begin{lstlisting}[language=Go]
+// Generate isolated key copies for worker pool
+pkPool := make([]plonk.ProvingKey, numWorkers)
+vkPool := make([]plonk.VerifyingKey, numWorkers)
+for i := 0; i < numWorkers; i++ {
+    // Cloning bypasses concurrent mutation race conditions
+    // at the cost of higher RAM usage.
+}
+\end{lstlisting}
+
+\subsection{Worker Orchestration}
+Jobs are divided into \texttt{BatchJob} structs containing exactly $B$ samples. These jobs are launched into an unbuffered Go channel, consumed rapidly by the independent workers. The worker loop executes the memory-intensive KZG multi-exponentiation subroutines and subsequently executes the validation step to guarantee soundness. Verified proof byte arrays and binary classifications are aggregated back via a synchronized WaitGroup, retaining perfect structural ordering.
+
+\section{Curve Selection: Reverting to BN254}
+During the development of Phase 2, an attempt was made to migrate the entire codebase from the EVM-native \texttt{ecc.BN254} curve to the \texttt{BLS12-377} curve to facilitate multi-proof recursive aggregation.
+
+While the inner proofs were successfully ported to \texttt{BLS12-377}, a fatal recursive memory initialization bug was discovered in the upstream \texttt{gnark} v0.11 PLONK verifier interface, triggering segmentation faults during the final SNARK aggregation phase. Consequently, to maintain the operational reliability of the parallel batch pipeline, the platform was deliberately reverted back to the highly stable \texttt{BN254} finite field, completing the Phase 2 goals on the industry-standard cryptographic foundation.

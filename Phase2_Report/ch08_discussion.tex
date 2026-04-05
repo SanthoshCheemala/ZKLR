@@ -1,0 +1,15 @@
+\chapter{Discussion}
+
+The experimental evaluations presented in Chapter 7 unveil several crucial insights regarding the practical deployment of zero-knowledge, privacy-preserving machine learning frameworks.
+
+\section{The Worker-Pool Bottleneck Paradigm}
+A naive assumption in classical parallelized architectures is that allocating more computational cores continuously yields linearly better throughput. Our evaluation on the HPC hardware decisively challenges this assumption within cryptographic proving frameworks.
+
+When assigning 96 worker threads to evaluate batch size 40, performance suffered dramatically (0.817s / sample) compared to running just 4 threads at batch size 80 (0.160s / sample). The fundamental cause lies in memory allocation. The PLONK \texttt{ProvingKey} buffers massive polynomial matrices defining the circuit constraints. Because \texttt{gnark}'s multi-exponentiations (MSM) algorithms independently attempt to utilize all available underlying OS threads concurrently, spawning 96 separate highly-threaded workers triggers severe CPU context-switching overhead and catastrophic L3 cache misses. 
+
+Consequently, the framework achieves maximum harmony under a moderately parallel scenario (4 workers processing deeper batch widths of 80), smoothly aligning execution bounds to available memory bandwidth.
+
+\section{Curve Arithmetic Selection: BN254}
+The strategic reversion to the \texttt{ecc.BN254} elliptic curve in the final product marks an important engineering decision. Testing with \texttt{BLS12-377} demonstrated prove times nearly twice as slow (4.144s vs 2.233s) and proof sizes inherently 27\% larger (744 vs 584 bytes). 
+
+Additionally, standard Ethereum L1 verification contracts provide extremely cheap precompiles for BN254. Ensuring that our ZKLR output operates on this specific mathematical field guarantees that future implementations can trustlessly relay prediction accuracy verification onto blockchain mainnets without requiring costly custom mathematical opcodes.

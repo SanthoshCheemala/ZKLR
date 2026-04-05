@@ -1,0 +1,14 @@
+\chapter{Limitations and Future Work}
+
+Despite achieving extraordinary throughput improvements matching production latency requirements, the ZKLR framework faces boundaries that mandate future foundational research.
+
+\sectionsection{Non-Linear Approximations}
+At its core, cryptographic finite fields operate solely via mathematical addition and multiplication. Simulating floating-point sigmoid operations required building a rigid lookup table. While this bounded approach eliminated Taylor series polynomial explosion, the lookup boundaries clamp outliers to logical approximations. For highly nuanced datasets that don't neatly threshold to positive/negative extremities, building arithmetic ZK mechanisms for precise float division remains a prevailing gap.
+
+\section{Recursive Proof Aggregation Instability}
+A theoretical objective of this report was the delivery of recursive aggregation---whereby an outer cryptographic system verifies an array of 50 inner PLONK proofs, compressing 50 validations into a single supreme proof payload. Although the theoretical logic mapping was correctly constructed surrounding the \texttt{BLS12-377} curve, the upstream cryptographic verification libraries failed reliably under high-memory recursive instantiations, generating runtime memory panics. 
+
+Future iterations of ZKLR should integrate bleeding-edge aggregation mechanisms (such as Groth16 outer proofs evaluating SNARK inner trees) once the underlying upstream toolchains achieve enterprise stability releases.
+
+\section{Scaling Towards Neural Architectures}
+Logistic regression represents the foundational unit of all complex intelligence constructs---the perceptron neuron. The $N$-Feature dynamic slice architectures developed in Phase 2 present a highly modular pathway forward. By interconnecting hundreds of discrete ZKLR circuits together along activation pathways, the architecture could be scaled upward, migrating proofs away from flat classifications towards Verifiable Multi-Layer Perceptrons (MLPs) and deep neural classification engines.

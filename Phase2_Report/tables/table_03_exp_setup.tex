@@ -1,21 +1,20 @@
 \begin{table}[H]
 \centering
 \caption{Experimental Setup}
-\label{tab:setup}
+\label{tab:exp_setup}
 \begin{tabular}{|l|l|}
 \hline
 \textbf{Parameter} & \textbf{Value} \\
 \hline
-Machine             & Apple MacBook Air (M-Series, Apple Silicon) \\
-CPU Cores           & 8 (performance + efficiency) \\
-RAM                 & 16 GB unified memory \\
-Operating System    & macOS 14+ (Sonoma) \\
-Language            & Go 1.22+ \\
-ZK Library          & gnark v0.11.0 \\
-ZK Backend          & PLONK \\
-Elliptic Curve      & BN254 \\
-gnark-crypto        & v0.14.0 \\
-Datasets            & public\_100.csv (100 smp, 2-feat); synthetic\_4f (1000 smp, 4-feat) \\
+Local Machine  & Apple MacBook Air (M-Series, 8-core, 16 GB) \\
+HPC Machine    & Linux cluster (96-core, accessed via SSH) \\
+Language       & Go 1.22+ \\
+ZK Library     & gnark v0.11.0 \\
+ZK Backend     & PLONK \\
+Elliptic Curve & BN254 \\
+Dataset (local) & \texttt{public\_100.csv} (100 samples, 2 features) \\
+Dataset (HPC)   & \texttt{test\_3000.csv} (3,000 samples, 4 features) \\
+HPC Runs       & batch=\{20,40\}, workers=\{6,96\} \\
 \hline
 \end{tabular}
 \end{table}

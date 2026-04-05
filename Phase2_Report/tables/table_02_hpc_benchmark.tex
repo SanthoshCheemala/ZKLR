@@ -1,0 +1,16 @@
+\begin{table}[H]
+\centering
+\caption{HPC Benchmark Results — 3,000 Samples, 4 Features, BN254 PLONK}
+\label{tab:hpc_benchmark}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{Batch} & \textbf{Workers} & \textbf{Batches} & \textbf{Setup (s)} & \textbf{Wall/Sample (s)} & \textbf{Prove/Samp (s)} & \textbf{Speedup} \\
+\hline
+20 & 6  & 150 & 5.28  & \textbf{0.283} & 1.663  & \textbf{7.1$\times$} \\
+40 & 6  & 75  & 10.27 & 0.310 & 1.789  & 6.5$\times$ \\
+40 & 96 & 75  & 10.18 & 0.713 & 10.694 & 2.8$\times$ \\
+\hline
+\multicolumn{7}{|l|}{\textit{Accuracy: 70.67\% (2120/3000 correct). Proof size: 584 bytes per batch (constant).}} \\
+\hline
+\end{tabular}
+\end{table}

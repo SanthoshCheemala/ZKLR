@@ -1,0 +1,25 @@
+\chapter{Problem Definition and Scope}
+
+The deployment of analytical frameworks like logistic regression typically forces a strict dichotomy between user privacy and verifiability. 
+
+\section{Problem Statement}
+In domains governed by compliance (e.g., credit scoring, hiring algorithms), a user has a right to verify that the prediction rendered against them was computed accurately using the exact model approved by regulators, and that the data used was their own. Conversely, the institution has a commercial obligation to protect its proprietary model weights from extraction or theft.
+
+Existing solutions either expose the weights (allowing extraction), expose the user data, or rely on a "trusted execution environment" (TEE) hardware enclave, which requires trusting a central hardware vendor and is vulnerable to side-channel extraction attacks~\cite{10.1145/3372297.3417278}. 
+
+Therefore, the problem is defined as: \emph{How can we cryptographically prove that $Y = \sigma(W \cdot X + B)$ is evaluated correctly for private $W$, private $B$, and public applicant data $X$, without relying on trusted hardware, while processing hundreds of predictions per minute?}
+
+\section{Scope of the Project}
+This project develops the \textbf{ZKLR (Zero-Knowledge Logistic Regression)} framework to solve this problem.
+
+\subsection{Phase 1 Scope (Baseline)}
+In Phase 1, we constructed the geometric baseline for the arithmetic circuit using gnark's PLONK implementation over the BN254 curve. We successfully converted floating-point model weights into integer representations scaled by $2^{32}$. Mathematical challenges surrounding finite-field negative numbers were resolved by shifting the data domain, while division was handled using quotient-remainder proof hints. A single-sample prediction pipeline successfully demonstrated soundness, resulting in a constant 584-byte proof.
+
+\subsection{Phase 2 Scope (Scaling \& Production)}
+Phase 2 expanded the framework from a theoretical prototype to a performant, deployable service. The scope includes:
+\begin{itemize}
+    \item \textbf{Mathematical Optimization:} Reducing the lookup table domain limits to tightly wrap the functional output space, thereby reducing RAM usage and circuit constraint size.
+    \item \textbf{Parallel Concurrency:} Building a Go-based parallel worker pipeline to generate proofs concurrently, aiming for sub-second amortized proving times on High-Performance Computing (HPC) targets.
+    \item \textbf{Generalization:} Escaping the hard-coded 2-feature limit and writing dynamic constraint builders capable of consuming $N$ features based purely on the dataset vector length.
+    \item \textbf{Decentralized Architecture:} Designing a smart-contract verification blueprint demonstrating how these proofs cross the border from local generation to immutable blockchain verification.
+\end{itemize}

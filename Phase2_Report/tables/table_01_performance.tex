@@ -1,19 +1,18 @@
 \begin{table}[H]
 \centering
-\caption{Performance Comparison: Phase 1 (Baseline) vs. Phase 2 (Optimized)}
-\label{tab:performance}
+\caption{Performance Comparison: Phase 1 (Baseline) vs.\ Phase 2 (Optimised)}
+\label{tab:phase_comparison}
 \begin{tabular}{|l|c|c|c|}
 \hline
 \textbf{Metric} & \textbf{Phase 1} & \textbf{Phase 2} & \textbf{Improvement} \\
 \hline
-Circuit Constraints & 159,804 & 114,219 & $-$29\% \\
-Compile Time        & 96 ms   & 67 ms   & $-$30\% \\
-Setup Time (1-feat) & 6.2 s   & 6.2 s   & $\approx$0\% \\
-Prove Time (single) & 3.8 s   & 4.1 s   & $-$ \\
-Verify Time         & 1.5 ms  & 1.6 ms  & $\approx$0\% \\
-Proof Size          & 584 B   & 584 B   & Constant \\
-Sigmoid Table Size  & 32,769  & 20,481  & $-$37\% \\
-Wall-clock (100 smp, batch=40) & N/A & 0.917 s/sample & --- \\
+Circuit Constraints        & 159,804 & 114,219 & $-$29\% \\
+Sigmoid Table Entries      & 32,769  & 20,481  & $-$37\% \\
+Compile Time               & 96 ms   & 67 ms   & $-$30\% \\
+1-Feature Setup Time       & 6.2 s   & 6.2 s   & $\approx$0 \\
+Single Prove Time          & 3.8 s   & 4.1 s   & --- \\
+Verify Time                & 1.5 ms  & 1.6 ms  & $\approx$0 \\
+Proof Size                 & 584 B   & 584 B   & Constant \\
 \hline
 \end{tabular}
 \end{table}

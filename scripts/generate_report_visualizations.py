@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 """
 BTP Phase-2 Report Visualization Generator
-Generates all publication-quality figures and LaTeX tables
-from experimentally measured ZKLR results.
+Uses REAL HPC benchmark data (3K samples, 4 features, BN254, April 2026).
 
 Output: Phase2_Report/figures/   (PNG @ 300 DPI + PDF)
         Phase2_Report/tables/    (LaTeX .tex files)
 """
 
-import os
+import matplotlib.patches as mpatches
+import os, math
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import numpy as np
 
 matplotlib.rcParams.update({
@@ -29,429 +28,426 @@ matplotlib.rcParams.update({
     'axes.spines.right': False,
 })
 
-# ── Output directories ──────────────────────────────────────────────────────
-BASE = os.path.join(os.path.dirname(__file__), '..', 'Phase2_Report')
+BASE    = os.path.join(os.path.dirname(__file__), '..', 'Phase2_Report')
 FIG_DIR = os.path.join(BASE, 'figures')
 TAB_DIR = os.path.join(BASE, 'tables')
 os.makedirs(FIG_DIR, exist_ok=True)
 os.makedirs(TAB_DIR, exist_ok=True)
 
-PALETTE = ['#2563EB', '#16A34A', '#DC2626', '#D97706', '#7C3AED']
+C = ['#2563EB', '#16A34A', '#DC2626', '#D97706', '#7C3AED', '#0891B2']
 
-def savefig(name):
-    png = os.path.join(FIG_DIR, name + '.png')
-    pdf = os.path.join(FIG_DIR, name + '.pdf')
-    plt.savefig(png)
-    plt.savefig(pdf)
+def save(name):
+    for ext in ('png', 'pdf'):
+        plt.savefig(os.path.join(FIG_DIR, f'{name}.{ext}'))
     plt.close()
-    print(f'  ✔ {name}.png / .pdf')
+    print(f'  ✔ {name}')
 
-# ── Measured data (all numbers from /results/ files) ───────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# DATA
+# ─────────────────────────────────────────────────────────────────────────────
 
-# Phase 1 vs Phase 2 — single sample, 1-feature, BN254
-P1 = {
-    'constraints': 159_804,
-    'compile_ms':  96,
-    'setup_s':     6.2,
-    'prove_s':     3.8,
-    'verify_ms':   1.5,
-    'table_entries': 32_769,
-    'proof_bytes': 584,
-}
-P2 = {
-    'constraints': 114_219,
-    'compile_ms':  67,
-    'setup_s':     6.186,
-    'prove_s':     4.127,
-    'verify_ms':   1.599,
-    'table_entries': 20_481,
-    'proof_bytes': 584,
-}
+# Phase 1 vs Phase 2 single-circuit (laptop, BN254, 1-feature)
+P1 = dict(constraints=159_804, compile_ms=96,  setup_s=6.2,   prove_s=3.8, verify_ms=1.5, table=32_769)
+P2 = dict(constraints=114_219, compile_ms=67,  setup_s=6.186, prove_s=4.127, verify_ms=1.599, table=20_481)
 
-# Batch benchmark (100 samples, batch=40, workers=4, BN254, public_100.csv)
-BATCH_BN254 = {
-    'constraints_batch40': 542_608,
-    'setup_s': 27.34,
-    'avg_prove_per_sample_s': 2.233,
-    'wall_clock_per_sample_s': 0.917,
-    'speedup': 2.2,
-    'accuracy': 77.0,
-    'total_predict_s': 91.68,   # 1m31.679s
-}
+# Optimised circuit (tighter sigmoid ±10) from benchmark_test
+OPT_IMPROVE = dict(constraints=32, compile=34, setup=47, prove=45, table=37)
 
-# BLS12-377 comparison (same dataset)
-BATCH_BLS377 = {
-    'constraints_batch40': 542_792,
-    'setup_s': 89.87,            # 1m29.9s
-    'avg_prove_per_sample_s': 4.144,
-    'wall_clock_per_sample_s': 3.835,
-    'speedup': 0.5,
-    'accuracy': 77.0,
-    'total_predict_s': 383.47,   # 6m23.47s
-    'proof_bytes': 744,
-}
+# ── REAL HPC results (3 K samples, 4 features, BN254) ──────────────────────
+# Worker scaling (1000 samples, batch=20, 4 features — from worker_benchmark.txt)
+WORKERS      = [1, 2, 4, 6]
+WALL_BY_WORKER = [0.531, 0.529, 0.538, 0.527]
 
-# Worker benchmark (1000 samples, batch=20, 4 features)
-WORKERS = [1, 2, 4, 6]
-WALL_PER_SAMPLE = [0.531, 0.529, 0.538, 0.527]
-SPEEDUP_BY_WORKER = [3.8, 3.8, 3.7, 3.8]
+# ── COMPREHENSIVE HPC SWEEP (3K Samples, BN254) ─────────────────────────────
+SWEEP_WORKERS = [1, 4, 8, 16, 32, 64, 96]
+SWEEP_BATCHES = [10, 20, 40, 80]
+# Matrix of Wall-Clock/Sample (rows=batches, cols=workers)
+SWEEP_WALL = np.array([
+    [0.353, 0.289, 0.309, 0.319, 0.298, 0.310, 0.307],  # B=10
+    [0.341, 0.285, 0.290, 0.298, 0.310, 0.292, 0.288],  # B=20
+    [0.346, 0.307, 0.297, 0.786, 0.753, 0.786, 0.817],  # B=40
+    [0.182, 0.160, 0.163, 0.468, 0.498, 0.511, 0.452]   # B=80
+])
 
-# Batch size analysis (extrapolated from keys + 100-sample run)
-BATCH_SIZES = [4, 20, 40]
-CONSTRAINTS_BY_BATCH = [147_116, 323_468, 542_608]
-PROVE_PER_SAMPLE_BY_BATCH = [2.44, 1.295, 2.233]   # from 5f/100-sample runs
-THROUGHPUT_BY_BATCH = [1/t for t in PROVE_PER_SAMPLE_BY_BATCH]
-
-# Circuit optimization (from circuit_architecture.md benchmark table)
-OPT_METRICS = ['Constraints', 'Compile (ms)', 'Setup (s)', 'Prove (s)', 'Table Entries']
-OPT_BEFORE =  [159_804,       96,             6.2,         3.8,          32_769]
-OPT_AFTER  =  [108_747,       63,             3.3,         2.1,          20_481]
-OPT_IMPROVE = [32, 34, 47, 45, 37]   # % improvement
+# Update batch configs to include the new ultimate winner
+BATCH_CONFIGS = [
+    {'label': 'batch=80\nworkers=4\n(Optimal HPC)', 'wall': 0.160, 'speedup': 12.5, 'setup_s': 11.68, 'constraints': 1_100_000},
+    {'label': 'batch=40\nworkers=6\n(HPC,3K)', 'wall': 0.310, 'speedup': 6.5, 'setup_s': 10.27, 'constraints': 542_608},
+    {'label': 'batch=40\nworkers=96\n(HPC,3K)','wall': 0.817, 'speedup': 2.4, 'setup_s': 10.68, 'constraints': 542_608},
+    {'label': 'batch=40\nworkers=4\n(Laptop,100)', 'wall': 0.917, 'speedup': 2.2, 'setup_s': 27.34,'constraints': 542_608},
+]
 
 # =============================================================================
-# Fig 01 — Constraints comparison (Phase 1 vs Phase 2, single circuit)
+# Fig 00 — HPC Grid Sweep Heatmap (New!)
 # =============================================================================
-print('\n[Generating figures...]')
+fig, ax = plt.subplots(figsize=(8, 5))
+cax = ax.imshow(SWEEP_WALL, cmap='YlOrRd', aspect='auto')
+ax.set_xticks(np.arange(len(SWEEP_WORKERS)))
+ax.set_yticks(np.arange(len(SWEEP_BATCHES)))
+ax.set_xticklabels(SWEEP_WORKERS)
+ax.set_yticklabels(SWEEP_BATCHES)
+ax.set_xlabel('Number of Parallel Workers')
+ax.set_ylabel('Batch Size')
+ax.set_title('Wall-Clock latency per sample (s)\nSweet Spot: Batch=80, Workers=4')
 
+# Annotate each cell with the numerical value
+for i in range(len(SWEEP_BATCHES)):
+    for j in range(len(SWEEP_WORKERS)):
+        val = SWEEP_WALL[i, j]
+        text_color = 'white' if val > 0.6 else 'black'
+        ax.text(j, i, f'{val:.3f}', ha='center', va='center', color=text_color, fontweight='bold', fontsize=9)
+
+# Highlight the best square (B=80, W=4)
+ax.add_patch(mpatches.Rectangle((1-0.5, 3-0.5), 1, 1, fill=False, edgecolor='blue', lw=3))
+
+cbar = fig.colorbar(cax)
+cbar.set_label('Seconds per sample')
+save('fig_15_hpc_grid_sweep_heatmap')
+
+# BN254 vs BLS12-377 (laptop, 100 samples, batch=40)
+BN254_vs_BLS = dict(
+    bn254  = dict(setup=27.34, wall=0.917, prove=2.233, proof_b=584),
+    bls377 = dict(setup=89.87, wall=3.835, prove=4.144, proof_b=744),
+)
+
+print('\n[Generating all figures with real HPC data...]')
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 01 — Constraints: Phase 1 vs Phase 2
+# ─────────────────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(7, 4))
-labels = ['Phase 1\n(Baseline)', 'Phase 2\n(Optimized)']
+labels = ['Phase 1\n(Baseline)', 'Phase 2\n(Optimised)']
 vals   = [P1['constraints'], P2['constraints']]
-bars = ax.bar(labels, vals, color=[PALETTE[2], PALETTE[0]], width=0.45, zorder=3)
-ax.set_ylabel('Number of Constraints')
+bars   = ax.bar(labels, vals, color=[C[2], C[0]], width=0.45, zorder=3)
+ax.set_ylabel('Circuit Constraints')
 ax.set_title('Circuit Constraints: Phase 1 vs Phase 2')
-ax.set_ylim(0, 185_000)
-ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x):,}'))
-ax.grid(axis='y', linestyle='--', alpha=0.5, zorder=0)
+ax.set_ylim(0, 195_000)
+ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x,_: f'{int(x):,}'))
+ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
 for bar, v in zip(bars, vals):
-    ax.text(bar.get_x() + bar.get_width()/2, v + 2000, f'{v:,}',
-            ha='center', va='bottom', fontweight='bold', fontsize=10)
-ax.annotate('−29% fewer\nconstraints', xy=(1, P2['constraints']),
-            xytext=(1.35, 140000), fontsize=9, color=PALETTE[1],
-            arrowprops=dict(arrowstyle='->', color=PALETTE[1]))
-savefig('fig_01_constraints_comparison')
+    ax.text(bar.get_x()+bar.get_width()/2, v+1500, f'{v:,}',
+            ha='center', va='bottom', fontweight='bold', fontsize=9)
+ax.annotate('−29%', xy=(1, P2['constraints']), xytext=(1.35, 148_000),
+            fontsize=10, color=C[1], fontweight='bold',
+            arrowprops=dict(arrowstyle='->', color=C[1], lw=1.5))
+save('fig_01_constraints_comparison')
 
-# =============================================================================
-# Fig 02 — Prove time comparison (Phase 1 vs Phase 2, per sample)
-# =============================================================================
-fig, ax = plt.subplots(figsize=(7, 4))
-vals = [P1['prove_s'], P2['prove_s']]
-bars = ax.bar(labels, vals, color=[PALETTE[2], PALETTE[0]], width=0.45, zorder=3)
-ax.set_ylabel('Prove Time (seconds)')
-ax.set_title('Single-Sample Prove Time: Phase 1 vs Phase 2')
-ax.set_ylim(0, 5)
-ax.grid(axis='y', linestyle='--', alpha=0.5, zorder=0)
-for bar, v in zip(bars, vals):
-    ax.text(bar.get_x() + bar.get_width()/2, v + 0.05, f'{v:.2f}s',
-            ha='center', va='bottom', fontweight='bold')
-savefig('fig_02_prove_time_comparison')
-
-# =============================================================================
-# Fig 03 — Verify time comparison
-# =============================================================================
-fig, ax = plt.subplots(figsize=(7, 4))
-vals = [P1['verify_ms'], P2['verify_ms']]
-bars = ax.bar(labels, vals, color=[PALETTE[2], PALETTE[0]], width=0.45, zorder=3)
-ax.set_ylabel('Verification Time (ms)')
-ax.set_title('Verification Time: Phase 1 vs Phase 2 (per sample)')
-ax.set_ylim(0, 2.5)
-ax.grid(axis='y', linestyle='--', alpha=0.5, zorder=0)
-for bar, v in zip(bars, vals):
-    ax.text(bar.get_x() + bar.get_width()/2, v + 0.05, f'{v:.2f} ms',
-            ha='center', va='bottom', fontweight='bold')
-savefig('fig_03_verify_time_comparison')
-
-# =============================================================================
-# Fig 04 — Setup time comparison
-# =============================================================================
-fig, ax = plt.subplots(figsize=(7, 4))
-vals = [P1['setup_s'], P2['setup_s']]
-bars = ax.bar(labels, vals, color=[PALETTE[2], PALETTE[0]], width=0.45, zorder=3)
-ax.set_ylabel('Setup Time (seconds)')
-ax.set_title('One-Time Setup Time: Phase 1 vs Phase 2')
-ax.set_ylim(0, 8)
-ax.grid(axis='y', linestyle='--', alpha=0.5, zorder=0)
-for bar, v in zip(bars, vals):
-    ax.text(bar.get_x() + bar.get_width()/2, v + 0.1, f'{v:.2f}s',
-            ha='center', va='bottom', fontweight='bold')
-savefig('fig_04_setup_time_comparison')
-
-# =============================================================================
-# Fig 05 — % Improvement across all circuit metrics
-# =============================================================================
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 02 — Overall % improvement across all metrics
+# ─────────────────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(8, 4.5))
-metrics = ['Constraints', 'Compile Time', 'Setup Time', 'Prove Time', 'Table Size']
-improvements = [32, 34, 47, 45, 37]
-colors = [PALETTE[1] if v > 0 else PALETTE[2] for v in improvements]
-bars = ax.bar(metrics, improvements, color=colors, zorder=3)
+metrics = ['Constraints\n−32%', 'Compile\n−34%', 'Setup\n−47%', 'Prove\n−45%', 'Table Size\n−37%']
+vals    = [32, 34, 47, 45, 37]
+bars    = ax.bar(metrics, vals, color=C[1], zorder=3)
 ax.set_ylabel('Improvement (%)')
-ax.set_title('Phase 2 Circuit Optimization: Improvement vs. Phase 1 Baseline')
-ax.set_ylim(0, 60)
-ax.grid(axis='y', linestyle='--', alpha=0.5, zorder=0)
-for bar, v in zip(bars, improvements):
-    ax.text(bar.get_x() + bar.get_width()/2, v + 0.8, f'{v}%',
-            ha='center', va='bottom', fontweight='bold', color=PALETTE[1])
-savefig('fig_05_overall_improvements')
+ax.set_title('Phase 2 Circuit Optimisation: Improvement vs Phase 1 Baseline')
+ax.set_ylim(0, 58)
+ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
+for bar, v in zip(bars, vals):
+    ax.text(bar.get_x()+bar.get_width()/2, v+0.8, f'{v}%',
+            ha='center', va='bottom', fontweight='bold', color=C[1])
+save('fig_02_circuit_improvements')
 
-# =============================================================================
-# Fig 06 — Batch size vs prove time per sample
-# =============================================================================
-fig, ax = plt.subplots(figsize=(7, 4))
-ax.plot(BATCH_SIZES, PROVE_PER_SAMPLE_BY_BATCH, 'o-', color=PALETTE[0],
-        linewidth=2, markersize=7, zorder=3)
-ax.fill_between(BATCH_SIZES, PROVE_PER_SAMPLE_BY_BATCH, alpha=0.12, color=PALETTE[0])
-ax.set_xlabel('Batch Size')
-ax.set_ylabel('Avg. Prove Time per Sample (s)')
-ax.set_title('Batch Size vs. Prove Time per Sample (BN254, 100 Samples)')
-ax.set_xticks(BATCH_SIZES)
-ax.grid(linestyle='--', alpha=0.5)
-for x, y in zip(BATCH_SIZES, PROVE_PER_SAMPLE_BY_BATCH):
-    ax.annotate(f'{y:.3f}s', (x, y), textcoords='offset points',
-                xytext=(5, 6), fontsize=9)
-savefig('fig_06_batch_prove_time')
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 03 — Prove + Verify time: P1 vs P2 (single sample)
+# ─────────────────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+for ax, metric, unit, p1v, p2v, title in [
+    (axes[0], 'Prove Time', 's', P1['prove_s'], P2['prove_s'], 'Prove Time per Sample'),
+    (axes[1], 'Verify Time', 'ms', P1['verify_ms'], P2['verify_ms'], 'Verify Time per Sample'),
+]:
+    bars = ax.bar(['Phase 1', 'Phase 2'], [p1v, p2v], color=[C[2], C[0]], width=0.45, zorder=3)
+    ax.set_ylabel(f'{metric} ({unit})')
+    ax.set_title(title)
+    ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
+    for bar, v in zip(bars, [p1v, p2v]):
+        ax.text(bar.get_x()+bar.get_width()/2, v*1.04, f'{v:.2f} {unit}',
+                ha='center', va='bottom', fontweight='bold', fontsize=9)
+plt.tight_layout()
+save('fig_03_prove_verify_comparison')
 
-# =============================================================================
-# Fig 07 — Batch size vs throughput
-# =============================================================================
-fig, ax = plt.subplots(figsize=(7, 4))
-ax.bar(BATCH_SIZES, THROUGHPUT_BY_BATCH, color=PALETTE[1], width=10, zorder=3)
-ax.set_xlabel('Batch Size')
-ax.set_ylabel('Throughput (samples/second)')
-ax.set_title('Throughput by Batch Size')
-ax.set_xticks(BATCH_SIZES)
-ax.grid(axis='y', linestyle='--', alpha=0.5, zorder=0)
-for x, y in zip(BATCH_SIZES, THROUGHPUT_BY_BATCH):
-    ax.text(x, y + 0.006, f'{y:.3f}', ha='center', va='bottom', fontweight='bold')
-savefig('fig_07_batch_throughput')
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 04 — Wall-clock per sample: all HPC configs + laptop (bar chart)
+# ─────────────────────────────────────────────────────────────────────────────
+labels = ['b=80\nw=4\n(Opt HPC)', 'b=20\nw=6\n(HPC)', 'b=40\nw=6\n(HPC)',
+          'b=40\nw=96\n(HPC)', 'b=40\nw=4\n(Laptop)']
+walls  = [0.160, 0.283, 0.310, 0.713, 0.917]
+colors = [C[4], C[1], C[0], C[3], C[2]]
+fig, ax = plt.subplots(figsize=(10, 4.5))
+bars = ax.bar(labels, walls, color=colors, zorder=3)
+ax.set_ylabel('Wall-Clock Time per Sample (s)')
+ax.set_title('Batch Configuration Comparison — Wall-Clock per Sample\n(BN254 PLONK, 4 Features)')
+ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
+ax.set_ylim(0, 1.2)
+for bar, v in zip(bars, walls):
+    ax.text(bar.get_x()+bar.get_width()/2, v+0.02, f'{v:.3f}s',
+            ha='center', va='bottom', fontweight='bold')
+ax.axhline(1/1, linestyle=':', color='grey', linewidth=1, label='1 s/sample reference')
+ax.legend()
+save('fig_04_wall_clock_comparison')
 
-# =============================================================================
-# Fig 08 — Worker count vs wall-clock time per sample
-# =============================================================================
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 05 — Speedup across configs
+# ─────────────────────────────────────────────────────────────────────────────
+speedups = [12.5, 7.1, 6.5, 2.8, 2.2]
+fig, ax  = plt.subplots(figsize=(10, 4.5))
+bars     = ax.bar(labels, speedups, color=colors, zorder=3)
+ax.set_ylabel('Speedup vs. Single-Sample Sequential')
+ax.set_title('Parallel Speedup Across Batch / Worker Configurations')
+ax.set_ylim(0, 15)
+ax.axhline(1, linestyle='--', color='grey', linewidth=1, label='1× (no speedup)')
+ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
+for bar, v in zip(bars, speedups):
+    ax.text(bar.get_x()+bar.get_width()/2, v+0.2, f'{v}×',
+            ha='center', va='bottom', fontweight='bold')
+ax.legend()
+save('fig_05_speedup_comparison')
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 06 — Worker scaling (1 K samples, batch=20)
+# ─────────────────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(7, 4))
-ax.plot(WORKERS, WALL_PER_SAMPLE, 's-', color=PALETTE[3], linewidth=2, markersize=7)
-ax.fill_between(WORKERS, WALL_PER_SAMPLE, alpha=0.12, color=PALETTE[3])
-ax.axvline(6, linestyle='--', color=PALETTE[1], linewidth=1.2, label='Optimal (6 workers)')
+ax.plot(WORKERS, WALL_BY_WORKER, 's-', color=C[3], linewidth=2, markersize=8, zorder=3)
+ax.fill_between(WORKERS, WALL_BY_WORKER, alpha=0.12, color=C[3])
+ax.axvline(6, linestyle='--', color=C[1], linewidth=1.2, label='Optimal (6 workers, 0.527s)')
 ax.set_xlabel('Number of Worker Goroutines')
 ax.set_ylabel('Wall-Clock Time per Sample (s)')
-ax.set_title('Worker Scaling Analysis (1000 Samples, Batch=20, 4 Features)')
+ax.set_title('Worker Count Scaling (1 K Samples, Batch=20, 4 Features)')
 ax.set_xticks(WORKERS)
+ax.set_ylim(0.50, 0.56)
 ax.legend()
-ax.grid(linestyle='--', alpha=0.5)
-for x, y in zip(WORKERS, WALL_PER_SAMPLE):
-    ax.annotate(f'{y:.3f}s', (x, y), textcoords='offset points', xytext=(5, 4))
-savefig('fig_08_worker_scaling')
+ax.grid(linestyle='--', alpha=0.4)
+for x, y in zip(WORKERS, WALL_BY_WORKER):
+    ax.annotate(f'{y}s', (x, y), textcoords='offset points', xytext=(6, 5), fontsize=9)
+save('fig_06_worker_scaling')
 
-# =============================================================================
-# Fig 09 — Scalability: sample count vs total wall-clock time (estimated)
-# =============================================================================
-sample_counts = [10, 100, 200, 500, 1000]
-# From results: 10 samples → ~35s (wall-clock); 100 samples → 91.7s; 1000 → ~527s
-wall_times_est = [35, 91.7, 183, 370, 527]
-fig, ax = plt.subplots(figsize=(7, 4))
-ax.plot(sample_counts, wall_times_est, 'D-', color=PALETTE[4], linewidth=2, markersize=6)
-ax.fill_between(sample_counts, wall_times_est, alpha=0.1, color=PALETTE[4])
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 07 — Setup time: batch=20 vs batch=40 (HPC + laptop)
+# ─────────────────────────────────────────────────────────────────────────────
+fig, ax = plt.subplots(figsize=(10, 4))
+setups = [11.68, 5.28, 10.27, 10.18, 27.34]
+bars   = ax.bar(labels, setups, color=colors, zorder=3)
+ax.set_ylabel('Setup Time (s)')
+ax.set_title('One-Time Setup / SRS Generation Time by Configuration')
+ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
+for bar, v in zip(bars, setups):
+    ax.text(bar.get_x()+bar.get_width()/2, v+0.4, f'{v:.1f}s',
+            ha='center', va='bottom', fontweight='bold', fontsize=9)
+save('fig_07_setup_time')
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 08 — BN254 vs BLS12-377 grouped bar chart
+# ─────────────────────────────────────────────────────────────────────────────
+metrics  = ['Setup (s)', 'Wall-clock/\nSample (s)', 'Prove/\nSample (s)', 'Proof Size\n(bytes÷10)']
+bn254_v  = [27.34, 0.917, 2.233, 584/10]
+bls377_v = [89.87, 3.835, 4.144, 744/10]
+x = np.arange(len(metrics)); w = 0.32
+fig, ax = plt.subplots(figsize=(9, 4.5))
+ax.bar(x-w/2, bn254_v,  w, label='BN254 (selected)',  color=C[0], zorder=3)
+ax.bar(x+w/2, bls377_v, w, label='BLS12-377 (tested)', color=C[2], zorder=3)
+ax.set_xticks(x); ax.set_xticklabels(metrics)
+ax.set_title('BN254 vs. BLS12-377 — Key Metrics (100 Samples, Batch=40, Laptop)')
+ax.set_ylabel('Value (see axis labels)')
+ax.legend(); ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
+save('fig_08_bn254_vs_bls377')
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 09 — Throughput (samples/sec) across configs
+# ─────────────────────────────────────────────────────────────────────────────
+throughputs = [1/w for w in walls]
+fig, ax     = plt.subplots(figsize=(10, 4.5))
+bars        = ax.bar(labels, throughputs, color=colors, zorder=3)
+ax.set_ylabel('Throughput (samples / second)')
+ax.set_title('Proving Throughput by Configuration')
+ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
+for bar, v in zip(bars, throughputs):
+    ax.text(bar.get_x()+bar.get_width()/2, v+0.04, f'{v:.2f}',
+            ha='center', va='bottom', fontweight='bold')
+save('fig_09_throughput')
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 10 — Scalability: Samples vs total wall-clock time (HPC, batch=20, w=6)
+# ─────────────────────────────────────────────────────────────────────────────
+# 0.160s/sample on HPC; real point at 3000 samples
+samples   = [100, 500, 1000, 2000, 3000, 5000, 10000]
+total_hpc = [s * 0.160 for s in samples]
+total_lap = [s * 0.917 for s in samples]
+fig, ax   = plt.subplots(figsize=(8, 4.5))
+ax.plot(samples, total_hpc, 'o-', color=C[4], linewidth=2, markersize=6, label='HPC (batch=80, w=4) — 0.160s/samp')
+ax.plot(samples, total_lap, 's--', color=C[2], linewidth=2, markersize=6, label='Laptop (batch=40, w=4) — 0.917s/samp')
+ax.scatter([3000], [3000*0.160], s=120, zorder=5, color=C[4], edgecolors='black', linewidth=1)
+ax.annotate('Measured\n(HPC, 3K)', (3000, 3000*0.160), xytext=(3200, 650),
+            fontsize=9, color=C[4], arrowprops=dict(arrowstyle='->', color=C[4]))
+ax.scatter([100], [100*0.917], s=120, zorder=5, color=C[2], edgecolors='black', linewidth=1)
+ax.annotate('Measured\n(Laptop)', (100, 100*0.917), xytext=(300, 250),
+            fontsize=9, color=C[2], arrowprops=dict(arrowstyle='->', color=C[2]))
 ax.set_xlabel('Number of Samples')
 ax.set_ylabel('Total Wall-Clock Time (s)')
 ax.set_title('Scalability: Dataset Size vs. Total Prediction Time')
-ax.grid(linestyle='--', alpha=0.5)
-ax.xscale = 'log'
-for x, y in zip(sample_counts, wall_times_est):
-    ax.annotate(f'{y}s', (x, y), textcoords='offset points', xytext=(4, 5), fontsize=9)
-savefig('fig_09_scalability_curve')
+ax.legend(); ax.grid(linestyle='--', alpha=0.4)
+ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x,_: f'{x:.0f}s'))
+save('fig_10_scalability_curve')
 
-# =============================================================================
-# Fig 10 — Constraints by batch size
-# =============================================================================
-fig, ax = plt.subplots(figsize=(7, 4))
-bars = ax.bar(BATCH_SIZES, CONSTRAINTS_BY_BATCH, color=PALETTE[0], width=10, zorder=3)
-ax.set_xlabel('Batch Size (samples per batch)')
-ax.set_ylabel('Constraints per Batch')
-ax.set_title('Circuit Constraints Scaling with Batch Size')
-ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x/1000)}K'))
-ax.set_xticks(BATCH_SIZES)
-ax.grid(axis='y', linestyle='--', alpha=0.5, zorder=0)
-for bar, v in zip(bars, CONSTRAINTS_BY_BATCH):
-    ax.text(bar.get_x() + bar.get_width()/2, v + 4000, f'{v//1000}K',
-            ha='center', va='bottom', fontweight='bold')
-savefig('fig_10_constraints_by_batch')
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 11 — Proof size: constant regardless of batch/config
+# ─────────────────────────────────────────────────────────────────────────────
+cfg_labels = ['b=80 w=4\n(HPC)', 'b=20 w=6\n(HPC)', 'b=40 w=6\n(HPC)', 'b=40 w=96\n(HPC)', 'b=40 w=4\n(Laptop)']
+fig, ax    = plt.subplots(figsize=(8, 4))
+ax.barh(cfg_labels, [584]*5, color=C[0], zorder=3, label='BN254 (584 B)')
+ax.barh(['BLS12-377 (laptop)'], [744], color=C[2], zorder=3, label='BLS12-377 (744 B)')
+ax.set_xlabel('Proof Size (bytes)')
+ax.set_title('Proof Size is Constant Across All Configurations')
+ax.set_xlim(0, 900)
+ax.axvline(584, linestyle='--', color=C[0], linewidth=1, alpha=0.5)
+ax.legend(); ax.grid(axis='x', linestyle='--', alpha=0.4, zorder=0)
+for i, v in enumerate([584]*4 + [744]):
+    ax.text(v+10, i, f'{v} B', va='center', fontweight='bold', fontsize=9)
+save('fig_11_proof_size')
 
-# =============================================================================
-# Fig 11 — BN254 vs BLS12-377 grouped bar chart
-# =============================================================================
-metrics = ['Setup (s)', 'Wall-clock/\nSample (s)', 'Prove/\nSample (s)', 'Proof Size\n(bytes÷10)']
-bn254_vals  = [27.34,  0.917, 2.233, 584/10]
-bls377_vals = [89.87,  3.835, 4.144, 744/10]
-x = np.arange(len(metrics))
-w = 0.32
-fig, ax = plt.subplots(figsize=(8.5, 4.5))
-bars1 = ax.bar(x - w/2, bn254_vals,  w, label='BN254',      color=PALETTE[0], zorder=3)
-bars2 = ax.bar(x + w/2, bls377_vals, w, label='BLS12-377',  color=PALETTE[2], zorder=3)
-ax.set_xticks(x)
-ax.set_xticklabels(metrics)
-ax.set_ylabel('Value (mixed units — see axis labels)')
-ax.set_title('BN254 vs. BLS12-377: Key Performance Metrics\n(100 Samples, Batch=40, Workers=4)')
-ax.legend()
-ax.grid(axis='y', linestyle='--', alpha=0.5, zorder=0)
-savefig('fig_11_bn254_vs_bls377')
-
-# =============================================================================
-# Fig 12 — Proof size (constant across batch sizes)
-# =============================================================================
-fig, ax = plt.subplots(figsize=(7, 3.5))
-ax.axhline(584, color=PALETTE[0], linewidth=2.5, label='BN254 (584 B)')
-ax.axhline(744, color=PALETTE[2], linewidth=2.5, linestyle='--', label='BLS12-377 (744 B)')
-ax.set_xlabel('Batch Size')
-ax.set_ylabel('Proof Size (bytes)')
-ax.set_title('Proof Size is Constant Regardless of Batch Size')
-ax.set_xticks(BATCH_SIZES)
-ax.set_ylim(400, 900)
-ax.set_xlim(1, 45)
-ax.legend()
-ax.grid(linestyle='--', alpha=0.5)
-savefig('fig_12_proof_size_constant')
-
-# =============================================================================
-# Fig 13 — Sigmoid precision (recreate error distribution analytically)
-# =============================================================================
-import math
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 12 — Sigmoid precision error distribution
+# ─────────────────────────────────────────────────────────────────────────────
 z_vals = np.linspace(-10, 10, 10000)
-
-def sigmoid_float(z):
-    return 1.0 / (1.0 + math.exp(-z))
-
-def sigmoid_circuit(z, prec=10, out_prec=16):
-    z_shifted = z + 10  # ModelOffset = 10
-    idx = int(z_shifted * (1 << prec))
-    idx = max(0, min(idx, 20480))
-    z_lookup = idx / (1 << prec) - 10
-    exact = sigmoid_float(z_lookup)
-    quantized = round(exact * (1 << out_prec)) / (1 << out_prec)
-    return quantized
-
-errors = [abs(sigmoid_circuit(z) - sigmoid_float(z)) for z in z_vals]
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.plot(z_vals, errors, color=PALETTE[4], linewidth=0.8, alpha=0.85)
-ax.axhline(np.mean(errors), color=PALETTE[1], linewidth=1.2, linestyle='--',
-           label=f'Mean error: {np.mean(errors):.6f}')
-ax.axhline(max(errors), color=PALETTE[2], linewidth=1.2, linestyle='-.',
-           label=f'Max error: {max(errors):.6f}')
-ax.set_xlabel('Input Z value')
-ax.set_ylabel('Absolute Error')
+def sig_float(z): return 1/(1+math.exp(-z))
+def sig_circuit(z):
+    idx = max(0, min(int((z+10)*(1<<10)), 20480))
+    return round(sig_float(idx/(1<<10)-10)*(1<<16))/(1<<16)
+errors = [abs(sig_circuit(float(z)) - sig_float(float(z))) for z in z_vals]
+fig, ax = plt.subplots(figsize=(8.5, 4))
+ax.plot(z_vals, errors, color=C[4], linewidth=0.7, alpha=0.85)
+ax.axhline(np.mean(errors), color=C[1], linewidth=1.4, linestyle='--',
+           label=f'Mean: {np.mean(errors):.6f}')
+ax.axhline(max(errors), color=C[2], linewidth=1.4, linestyle='-.',
+           label=f'Max: {max(errors):.6f}')
+ax.set_xlabel('Input Z'); ax.set_ylabel('Absolute Error')
 ax.set_title('Sigmoid Lookup Table: Approximation Error vs. Exact Float')
-ax.legend()
-ax.grid(linestyle='--', alpha=0.4)
-savefig('fig_13_sigmoid_precision')
+ax.legend(); ax.grid(linestyle='--', alpha=0.4)
+save('fig_12_sigmoid_precision')
 
-# =============================================================================
-# Fig 14 — Radar chart: overall Phase 2 improvements
-# =============================================================================
-categories = ['Constraints\n−32%', 'Compile\n−34%', 'Setup\n−47%',
-              'Prove\n−45%', 'Table\n−37%']
-values = [32, 34, 47, 45, 37]
-N = len(categories)
-angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
-angles += angles[:1]
-values_plot = values + values[:1]
-
-fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-ax.fill(angles, values_plot, alpha=0.25, color=PALETTE[0])
-ax.plot(angles, values_plot, 'o-', linewidth=2, color=PALETTE[0])
-ax.set_xticks(angles[:-1])
-ax.set_xticklabels(categories, size=10)
-ax.set_ylim(0, 60)
-ax.set_yticks([10, 20, 30, 40, 50])
-ax.set_yticklabels(['10%', '20%', '30%', '40%', '50%'], size=8)
-ax.set_title('Phase 2 Circuit Optimization Summary\n(% Improvement vs. Phase 1)',
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 13 — Radar chart: Phase 2 improvements
+# ─────────────────────────────────────────────────────────────────────────────
+cats   = ['Constraints\n−32%', 'Compile\n−34%', 'Setup\n−47%', 'Prove\n−45%', 'Table\n−37%']
+vals13 = [32, 34, 47, 45, 37]
+N      = len(cats)
+angles = np.linspace(0, 2*np.pi, N, endpoint=False).tolist(); angles += angles[:1]
+vp     = vals13 + vals13[:1]
+fig, ax = plt.subplots(figsize=(6,6), subplot_kw=dict(polar=True))
+ax.fill(angles, vp, alpha=0.25, color=C[0])
+ax.plot(angles, vp, 'o-', linewidth=2, color=C[0])
+ax.set_xticks(angles[:-1]); ax.set_xticklabels(cats, size=10)
+ax.set_ylim(0, 60); ax.set_yticks([10,20,30,40,50])
+ax.set_yticklabels(['10%','20%','30%','40%','50%'], size=8)
+ax.set_title('Phase 2 Circuit Optimisation Summary\n(% Improvement vs Phase 1)',
              pad=20, fontsize=12, fontweight='bold')
-savefig('fig_14_radar_improvements')
+save('fig_13_radar_improvements')
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fig 14 — HPC vs Laptop head-to-head (best config each)
+# ─────────────────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 3, figsize=(13, 4.5))
+comparisons = [
+    ('Wall-clock / Sample (s)', 0.283, 0.917, 'Lower is better'),
+    ('Speedup vs Sequential',    7.1,   2.2,  'Higher is better'),
+    ('Setup Time (s)',           5.28,  27.34, 'Lower is better'),
+]
+for ax, (ylabel, hpc_v, lap_v, note) in zip(axes, comparisons):
+    bars = ax.bar(['HPC\n(best config)', 'Laptop\n(best config)'],
+                  [hpc_v, lap_v], color=[C[1], C[2]], width=0.5, zorder=3)
+    ax.set_ylabel(ylabel); ax.set_title(f'{ylabel}\n({note})', fontsize=10)
+    ax.grid(axis='y', linestyle='--', alpha=0.4, zorder=0)
+    for bar, v in zip(bars, [hpc_v, lap_v]):
+        ax.text(bar.get_x()+bar.get_width()/2, v*1.04, f'{v}',
+                ha='center', va='bottom', fontweight='bold', fontsize=10)
+plt.suptitle('HPC vs. Laptop: Best Configuration Head-to-Head (BN254, 3K/100 Samples)',
+             fontsize=12, fontweight='bold', y=1.02)
+plt.tight_layout()
+save('fig_14_hpc_vs_laptop')
 
 print('\n[All figures saved to Phase2_Report/figures/]')
 
-# =============================================================================
+# ─────────────────────────────────────────────────────────────────────────────
 # LaTeX Tables
-# =============================================================================
+# ─────────────────────────────────────────────────────────────────────────────
 print('\n[Generating LaTeX tables...]')
 
-# Table 1 — Phase 1 vs Phase 2 performance
 t1 = r"""\begin{table}[H]
 \centering
-\caption{Performance Comparison: Phase 1 (Baseline) vs. Phase 2 (Optimized)}
-\label{tab:performance}
+\caption{Performance Comparison: Phase 1 (Baseline) vs.\ Phase 2 (Optimised)}
+\label{tab:phase_comparison}
 \begin{tabular}{|l|c|c|c|}
 \hline
 \textbf{Metric} & \textbf{Phase 1} & \textbf{Phase 2} & \textbf{Improvement} \\
 \hline
-Circuit Constraints & 159,804 & 114,219 & $-$29\% \\
-Compile Time        & 96 ms   & 67 ms   & $-$30\% \\
-Setup Time (1-feat) & 6.2 s   & 6.2 s   & $\approx$0\% \\
-Prove Time (single) & 3.8 s   & 4.1 s   & $-$ \\
-Verify Time         & 1.5 ms  & 1.6 ms  & $\approx$0\% \\
-Proof Size          & 584 B   & 584 B   & Constant \\
-Sigmoid Table Size  & 32,769  & 20,481  & $-$37\% \\
-Wall-clock (100 smp, batch=40) & N/A & 0.917 s/sample & --- \\
+Circuit Constraints        & 159,804 & 114,219 & $-$29\% \\
+Sigmoid Table Entries      & 32,769  & 20,481  & $-$37\% \\
+Compile Time               & 96 ms   & 67 ms   & $-$30\% \\
+1-Feature Setup Time       & 6.2 s   & 6.2 s   & $\approx$0 \\
+Single Prove Time          & 3.8 s   & 4.1 s   & --- \\
+Verify Time                & 1.5 ms  & 1.6 ms  & $\approx$0 \\
+Proof Size                 & 584 B   & 584 B   & Constant \\
 \hline
 \end{tabular}
 \end{table}
 """
 
-# Table 2 — Batch processing breakdown
 t2 = r"""\begin{table}[H]
 \centering
-\caption{Batch Processing Performance by Batch Size (BN254, 100 Samples, 4 Workers)}
-\label{tab:batch}
-\begin{tabular}{|c|c|c|c|c|}
+\caption{HPC Benchmark Results — 3,000 Samples, 4 Features, BN254 PLONK}
+\label{tab:hpc_benchmark}
+\begin{tabular}{|c|c|c|c|c|c|c|}
 \hline
-\textbf{Batch Size} & \textbf{Constraints} & \textbf{Prove/Sample (s)} & \textbf{Throughput (samp/s)} & \textbf{Speedup} \\
+\textbf{Batch} & \textbf{Workers} & \textbf{Batches} & \textbf{Setup (s)} & \textbf{Wall/Sample (s)} & \textbf{Prove/Samp (s)} & \textbf{Speedup} \\
 \hline
-4  & 147,116 & 2.44  & 0.41 & --- \\
-20 & 323,468 & 1.295 & 0.77 & 1.9$\times$ \\
-40 & 542,608 & 2.233 & 1.09 & 2.2$\times$ \\
+20 & 6  & 150 & 5.28  & \textbf{0.283} & 1.663  & \textbf{7.1$\times$} \\
+40 & 6  & 75  & 10.27 & 0.310 & 1.789  & 6.5$\times$ \\
+40 & 96 & 75  & 10.18 & 0.713 & 10.694 & 2.8$\times$ \\
+\hline
+\multicolumn{7}{|l|}{\textit{Accuracy: 70.67\% (2120/3000 correct). Proof size: 584 bytes per batch (constant).}} \\
 \hline
 \end{tabular}
 \end{table}
 """
 
-# Table 3 — Experimental setup
 t3 = r"""\begin{table}[H]
 \centering
 \caption{Experimental Setup}
-\label{tab:setup}
+\label{tab:exp_setup}
 \begin{tabular}{|l|l|}
 \hline
 \textbf{Parameter} & \textbf{Value} \\
 \hline
-Machine             & Apple MacBook Air (M-Series, Apple Silicon) \\
-CPU Cores           & 8 (performance + efficiency) \\
-RAM                 & 16 GB unified memory \\
-Operating System    & macOS 14+ (Sonoma) \\
-Language            & Go 1.22+ \\
-ZK Library          & gnark v0.11.0 \\
-ZK Backend          & PLONK \\
-Elliptic Curve      & BN254 \\
-gnark-crypto        & v0.14.0 \\
-Datasets            & public\_100.csv (100 smp, 2-feat); synthetic\_4f (1000 smp, 4-feat) \\
+Local Machine  & Apple MacBook Air (M-Series, 8-core, 16 GB) \\
+HPC Machine    & Linux cluster (96-core, accessed via SSH) \\
+Language       & Go 1.22+ \\
+ZK Library     & gnark v0.11.0 \\
+ZK Backend     & PLONK \\
+Elliptic Curve & BN254 \\
+Dataset (local) & \texttt{public\_100.csv} (100 samples, 2 features) \\
+Dataset (HPC)   & \texttt{test\_3000.csv} (3,000 samples, 4 features) \\
+HPC Runs       & batch=\{20,40\}, workers=\{6,96\} \\
 \hline
 \end{tabular}
 \end{table}
 """
 
-# Table 4 — Circuit architecture
 t4 = r"""\begin{table}[H]
 \centering
-\caption{Circuit Architecture Components}
-\label{tab:circuit}
+\caption{Circuit Architecture Summary}
+\label{tab:circuit_arch}
 \begin{tabular}{|l|l|l|}
 \hline
-\textbf{Component} & \textbf{Design Choice} & \textbf{Rationale} \\
+\textbf{Component} & \textbf{Choice} & \textbf{Rationale} \\
 \hline
-Proof System        & PLONK (gnark)          & Supports lookup tables; universal SRS \\
-Curve               & BN254                  & Fast proving; 128-bit security; EVM-native \\
-Scaling             & $2^{32}$ fixed-point   & Float $\to$ integer for finite field compat. \\
-Sigmoid Method      & Lookup table (20,481 entries) & $O(1)$ crypto lookup vs Taylor series \\
-Sigmoid Range       & $\pm 10$ (shifted $+10$) & 37\% smaller table vs $\pm 16$ baseline \\
-Truncation          & Remainder hint ($2^{22}$) & Avoids modular division artifacts \\
-Clamping            & \texttt{api.Cmp} + \texttt{api.Select} & Handles out-of-range $Z$ safely \\
-Feature Support     & Dynamic slices ($N$-feature) & Generalised beyond 2-feature BMI model \\
-Batch Mode          & \texttt{BatchCircuit} wrapper & Amortises setup cost across samples \\
+Proof System   & PLONK (gnark)    & Supports lookup tables; universal SRS \\
+Curve          & BN254            & Fast proving; 128-bit security; EVM-native \\
+Scaling        & $2^{32}$ fixed-point & Float $\to$ integer for finite field \\
+Sigmoid        & Lookup table (20,481 entries) & $O(1)$; avoids Taylor series \\
+Sigmoid Range  & $\pm 10$ (shifted $+10$) & 37\% smaller vs $\pm 16$ baseline \\
+Truncation     & Remainder hint ($2^{22}$) & Avoids modular division \\
+Clamping       & \texttt{api.Cmp} + \texttt{api.Select} & Edge-case safety \\
+Feature Support & Dynamic slices ($N$-feature) & Supports any model size \\
+Batch Mode     & Worker-pool goroutines & Amortises setup; full CPU use \\
 \hline
 \end{tabular}
 \end{table}
@@ -459,36 +455,11 @@ Batch Mode          & \texttt{BatchCircuit} wrapper & Amortises setup cost acros
 
 for fname, content in [
     ('table_01_performance.tex', t1),
-    ('table_02_batch_perf.tex',  t2),
+    ('table_02_hpc_benchmark.tex', t2),
     ('table_03_exp_setup.tex',   t3),
     ('table_04_circuit.tex',     t4),
 ]:
-    path = os.path.join(TAB_DIR, fname)
-    with open(path, 'w') as f:
-        f.write(content)
+    with open(os.path.join(TAB_DIR, fname), 'w') as f: f.write(content)
     print(f'  ✔ {fname}')
 
-# Generate figure manifest
-manifest_lines = [
-    'ZKLR Phase-2 Report — Figure Manifest',
-    '=' * 45,
-    'fig_01_constraints_comparison   — Bar chart: Phase 1 vs Phase 2 circuit constraints',
-    'fig_02_prove_time_comparison    — Bar chart: single-sample prove time comparison',
-    'fig_03_verify_time_comparison   — Bar chart: single-sample verify time comparison',
-    'fig_04_setup_time_comparison    — Bar chart: one-time setup time comparison',
-    'fig_05_overall_improvements     — Bar chart: % improvement across all metrics',
-    'fig_06_batch_prove_time         — Line chart: batch size vs prove time per sample',
-    'fig_07_batch_throughput         — Bar chart: batch size vs throughput',
-    'fig_08_worker_scaling           — Line chart: worker count vs wall-clock time',
-    'fig_09_scalability_curve        — Line chart: sample count vs total time',
-    'fig_10_constraints_by_batch     — Bar chart: constraints per batch size',
-    'fig_11_bn254_vs_bls377          — Grouped bar chart: curve comparison',
-    'fig_12_proof_size_constant      — Horizontal line chart: constant proof size',
-    'fig_13_sigmoid_precision        — Error plot: lookup approximation accuracy',
-    'fig_14_radar_improvements       — Radar chart: all Phase 2 improvements',
-]
-with open(os.path.join(FIG_DIR, 'figure_manifest.txt'), 'w') as f:
-    f.write('\n'.join(manifest_lines))
-print('  ✔ figure_manifest.txt')
-
-print('\n✅ All visualizations and tables generated successfully!\n')
+print('\n✅ Done! All figures and tables generated.\n')

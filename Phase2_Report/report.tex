@@ -11,7 +11,6 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{booktabs}
-\usepackage{siunitx}
 \usepackage{amsmath, amssymb}
 \usepackage{amsthm}
 \newtheorem{definition}{Definition}[chapter]
@@ -21,12 +20,8 @@
 \usepackage{subcaption}
 \usepackage{xcolor}
 \usepackage{listings}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
 \usepackage{longtable}
 \usepackage{parskip}
-\usepackage{multirow}
-\usepackage[nottoc]{tocbibind}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks=true,
@@ -152,9 +147,9 @@ The growing reliance on machine learning (ML) models in privacy-sensitive domain
 
 \textbf{Phase 1} established the foundational ZKLR pipeline using PLONK-SNARKs on the BN254 elliptic curve, implemented via the \texttt{gnark} Go library. The framework encodes logistic regression as an arithmetic circuit with a sigmoid activation handled by a pre-computed 32,769-entry lookup table, achieving a constant proof size of 584 bytes regardless of the number of input features.
 
-\textbf{Phase 2} introduces three major optimizations. First, the sigmoid lookup table range was tightened from $\pm16$ to $\pm10$, reducing circuit constraints by 32\% (from 159,804 to 114,219), compile time by 34\%, and setup time by 47\%. Second, a parallelized batch proving architecture was introduced, amortizing setup costs across datasets of any size and achieving a 2.2$\times$ wall-clock speedup over sequential proving for 100-sample datasets. Third, the circuit was generalized to support $N$-feature logistic regression models natively through dynamic slice-based constraint generation. A smart contract integration design was also documented, demonstrating how the 584-byte BN254 PLONK proofs can be verified on-chain via an auto-exported Solidity verifier contract.
+\textbf{Phase 2} introduces three major optimizations. First, the sigmoid lookup table range was tightened from $\pm10$ (a 32\% constraint reduction), cutting total computation drastically. Second, a parallelized batch proving architecture was synthesized using concurrent worker-pools. Evaluated against a rigorous 28-configuration High-Performance Computing (HPC) grid sweep, the optimal architecture (Batch size 80, 4 workers) achieved an unparalleled 12.5$\times$ wall-clock speedup representing just 0.160 seconds of latency per sample. Third, the circuit was abstracted to support dynamic $N$-feature models natively via slice allocations. Finally, an export schema was documented verifying the constant 584-byte PLONK proofs on-chain inside EVM smart contracts.
 
-Experimental evaluation on an Apple Silicon M-series laptop demonstrates a wall-clock proving speed of 0.917 seconds per sample (batch=40, 77\% classification accuracy), establishing ZKLR as a viable framework for privacy-preserving ML inference in resource-constrained environments.
+Experimental data confirmed that extreme hardware scaling (96 workers concurrently) causes catastrophic L3 cache thrashing, mathematically validating the moderation strategy taken during the parallel grid sweep.
 
 \clearpage
 
@@ -175,11 +170,11 @@ Experimental evaluation on an Apple Silicon M-series laptop demonstrates a wall-
 \input{ch03_problem.tex}
 \input{ch04_architecture.tex}
 \input{ch05_implementation.tex}
-\input{ch06_experiments.tex}
+\input{ch06_experimental_setup.tex}
 \input{ch07_results.tex}
 \input{ch08_discussion.tex}
 \input{ch09_applications.tex}
-\input{ch10_future.tex}
+\input{ch10_limitations.tex}
 \input{ch11_conclusion.tex}
 
 % ── Bibliography ─────────────────────────────────────────────

@@ -55,10 +55,7 @@ func BenchmarkFullPipeline(b *testing.B) {
 		}
 
 		// Prove
-		assignment := &LRCircuit{
-			W: []frontend.Variable{w[0], w[1]},
-			B: bi,
-			X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+		assignment := newAssignment(w, bi, x, zt, rem, y)
 		witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 		proof, err := plonk.Prove(ccs, pk, witness)
 		if err != nil {
@@ -107,7 +104,7 @@ func BenchmarkProve(b *testing.B) {
 	pk, _, _ := plonk.Setup(ccs, srs, srsLagrange)
 
 	w, bi, x, zt, rem, y := computeWitness(-3.3144933046, 0.3877500778, 281.2861173099, 170, 750)
-	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: bi, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+	assignment := newAssignment(w, bi, x, zt, rem, y)
 	witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 
 	b.ResetTimer()
@@ -126,7 +123,7 @@ func BenchmarkVerify(b *testing.B) {
 	pk, vk, _ := plonk.Setup(ccs, srs, srsLagrange)
 
 	w, bi, x, zt, rem, y := computeWitness(-3.3144933046, 0.3877500778, 281.2861173099, 170, 750)
-	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: bi, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+	assignment := newAssignment(w, bi, x, zt, rem, y)
 	witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	proof, _ := plonk.Prove(ccs, pk, witness)
 	publicWitness, _ := witness.Public()
@@ -189,7 +186,7 @@ func TestMetricsReport(t *testing.T) {
 
 	// 3. Prove
 	t.Log("\n─── Proof Generation ───")
-	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: bi, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+	assignment := newAssignment(w, bi, x, zt, rem, y)
 	witness, _ := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 
 	startProve := time.Now()
@@ -330,7 +327,7 @@ func TestWithPreScaledConstants(t *testing.T) {
 			y_bi = maxOut
 		}
 
-		assignment := &LRCircuit{W: []frontend.Variable{w1Scaled, w2Scaled}, B: bScaled, X: []frontend.Variable{x_bi[0], x_bi[1]}, ZTable: z_table, Rem: rem, Y: y_bi}
+		assignment := newAssignment([2]*big.Int{w1Scaled, w2Scaled}, bScaled, x_bi, z_table, rem, y_bi)
 		err := test.IsSolved(NewLRCircuit(2), assignment, ecc.BN254.ScalarField())
 
 		prediction := "NORMAL"

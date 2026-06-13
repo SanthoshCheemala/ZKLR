@@ -21,13 +21,36 @@ import (
 type PredictionResult struct {
 	Height      int
 	Weight      int
-	Probability float64
+	Probability float64 // prover-side; public only in ModeProb
+	Label       int     // class bit (0/1); the public output in ModeLabel
 	Prediction  string
 
 	ProofBytes []byte
 	ProveTime  time.Duration
 	VerifyTime time.Duration
 	Verified   bool
+}
+
+// ─── Model Scaling & Commitment ──────────────────────────────
+
+// ScaleModel converts float weights/bias to the circuit's 2^32 fixed-point integers.
+// This is the single place float→integer conversion happens, so the witness,
+// the commitment, and any exported model description always agree.
+func ScaleModel(wFloat []float64, bFloat float64) ([]*big.Int, *big.Int) {
+	scale := float64(circuit.ScalingFactor.Int64())
+	wBig := make([]*big.Int, len(wFloat))
+	for i := range wFloat {
+		wBig[i] = new(big.Int).SetInt64(int64(wFloat[i] * scale))
+	}
+	bBig := new(big.Int).SetInt64(int64(bFloat * scale))
+	return wBig, bBig
+}
+
+// ModelCommitment returns MiMC(W..., B) over the scaled model — the public
+// value that binds every proof to this specific model.
+func ModelCommitment(wFloat []float64, bFloat float64) *big.Int {
+	wBig, bBig := ScaleModel(wFloat, bFloat)
+	return circuit.ComputeCommitment(wBig, bBig)
 }
 
 // ─── Witness Computation ─────────────────────────────────────
@@ -37,17 +60,15 @@ func ComputeWitness(wFloat []float64, bFloat float64, features []int) *circuit.L
 	if len(wFloat) != len(features) {
 		panic("model weights and features length mismatch")
 	}
-	scale := new(big.Int).Set(circuit.ScalingFactor)
 
+	wInts, bBig := ScaleModel(wFloat, bFloat)
 	wBig := make([]frontend.Variable, len(wFloat))
 	xBig := make([]frontend.Variable, len(features))
-	
+
 	for i := 0; i < len(wFloat); i++ {
-		wBig[i] = new(big.Int).SetInt64(int64(wFloat[i] * float64(scale.Int64())))
+		wBig[i] = wInts[i]
 		xBig[i] = big.NewInt(int64(features[i]))
 	}
-
-	bBig := new(big.Int).SetInt64(int64(bFloat * float64(scale.Int64())))
 
 	wx := big.NewInt(0)
 	for i := 0; i < len(wFloat); i++ {
@@ -88,6 +109,7 @@ func ComputeWitness(wFloat []float64, bFloat float64, features []int) *circuit.L
 	return &circuit.LRCircuit{
 		W: wBig, B: bBig,
 		X: xBig, ZTable: zTable, Rem: rem, Y: yBig,
+		Commitment: circuit.ComputeCommitment(wInts, bBig),
 	}
 }
 

@@ -73,6 +73,17 @@ func computeWitness(w1Float, w2Float, bFloat float64, height, weight int) (w_bi 
 	return
 }
 
+// newAssignment builds a complete LRCircuit assignment, including the model
+// commitment MiMC(W..., B), from pre-computed witness values.
+func newAssignment(w [2]*big.Int, b *big.Int, x [2]*big.Int, zt, rem, y *big.Int) *LRCircuit {
+	return &LRCircuit{
+		W: []frontend.Variable{w[0], w[1]}, B: b,
+		X:      []frontend.Variable{x[0], x[1]},
+		ZTable: zt, Rem: rem, Y: y,
+		Commitment: ComputeCommitment([]*big.Int{w[0], w[1]}, b),
+	}
+}
+
 // ─── Test: Circuit Compiles ──────────────────────────────────
 
 func TestCircuitCompiles(t *testing.T) {
@@ -90,7 +101,7 @@ func TestValidWitnessPass(t *testing.T) {
 	// h=160, w×10=850 (85.0kg, BMI 33.2) → OVERWEIGHT
 	w, b, x, zt, rem, y := computeWitness(-3.3144933046, 0.3877500778, 281.2861173099, 160, 850)
 
-	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: b, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+	assignment := newAssignment(w, b, x, zt, rem, y)
 	err := test.IsSolved(NewLRCircuit(2), assignment, ecc.BN254.ScalarField())
 	if err != nil {
 		t.Fatalf("Valid witness (overweight) rejected: %v", err)
@@ -104,7 +115,7 @@ func TestValidWitnessFail(t *testing.T) {
 	// h=180, w×10=600 (60.0kg, BMI 18.5) → NORMAL
 	w, b, x, zt, rem, y := computeWitness(-3.3144933046, 0.3877500778, 281.2861173099, 180, 600)
 
-	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: b, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+	assignment := newAssignment(w, b, x, zt, rem, y)
 	err := test.IsSolved(NewLRCircuit(2), assignment, ecc.BN254.ScalarField())
 	if err != nil {
 		t.Fatalf("Valid witness (normal) rejected: %v", err)
@@ -118,7 +129,7 @@ func TestValidWitnessBoundary(t *testing.T) {
 	// h=170, w×10=725 (72.5kg, BMI ~25.1) → borderline
 	w, b, x, zt, rem, y := computeWitness(-3.3144933046, 0.3877500778, 281.2861173099, 170, 725)
 
-	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: b, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: y}
+	assignment := newAssignment(w, b, x, zt, rem, y)
 	err := test.IsSolved(NewLRCircuit(2), assignment, ecc.BN254.ScalarField())
 	if err != nil {
 		t.Fatalf("Valid witness (boundary) rejected: %v", err)
@@ -134,7 +145,7 @@ func TestInvalidY(t *testing.T) {
 	// Tamper Y with a wrong value
 	wrongY := big.NewInt(12345)
 
-	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: b, X: []frontend.Variable{x[0], x[1]}, ZTable: zt, Rem: rem, Y: wrongY}
+	assignment := newAssignment(w, b, x, zt, rem, wrongY)
 	err := test.IsSolved(NewLRCircuit(2), assignment, ecc.BN254.ScalarField())
 	if err == nil {
 		t.Fatal("Circuit should reject wrong Y but didn't")
@@ -150,7 +161,7 @@ func TestInvalidZ(t *testing.T) {
 	// Tamper ZTable
 	wrongZ := big.NewInt(999)
 
-	assignment := &LRCircuit{W: []frontend.Variable{w[0], w[1]}, B: b, X: []frontend.Variable{x[0], x[1]}, ZTable: wrongZ, Rem: rem, Y: y}
+	assignment := newAssignment(w, b, x, wrongZ, rem, y)
 	err := test.IsSolved(NewLRCircuit(2), assignment, ecc.BN254.ScalarField())
 	if err == nil {
 		t.Fatal("Circuit should reject wrong Z but didn't")
@@ -206,7 +217,7 @@ func TestMultipleFeatures(t *testing.T) {
 	for _, features := range dataToTest {
 		h, w := features[0], features[1]
 		w_bi, b_bi, x_bi, zt, rem, y := computeWitness(-3.3144933046, 0.3877500778, 281.2861173099, h, w)
-		assignment := &LRCircuit{W: []frontend.Variable{w_bi[0], w_bi[1]}, B: b_bi, X: []frontend.Variable{x_bi[0], x_bi[1]}, ZTable: zt, Rem: rem, Y: y}
+		assignment := newAssignment(w_bi, b_bi, x_bi, zt, rem, y)
 		err := test.IsSolved(NewLRCircuit(2), assignment, ecc.BN254.ScalarField())
 
 		yFloat := float64(y.Int64()) / float64(1<<OutputPrecision)

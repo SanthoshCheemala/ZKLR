@@ -1,0 +1,15 @@
+EZKL baseline — WBC model, batch=20, features=9
+ezkl version: 23.0.5, logrows: 16
+verified: True
+  gen_settings: 0.007s
+     calibrate: 0.142s
+       compile: 0.001s
+       get_srs: 0.023s
+         setup: 2.838s
+   gen_witness: 0.009s
+         prove: 2.530s
+        verify: 0.027s
+   proof_bytes: 3648
+      pk_bytes: 327305323
+      vk_bytes: 148999
+prove/sample: 0.127s

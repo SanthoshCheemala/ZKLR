@@ -1,0 +1,17 @@
+ZKLR Fidelity Report — wbc
+==================================================
+samples (train/test):    478/205
+features:                9
+quantization:            features used raw (integers 1..10) — no input quantization
+max |z| on test:         19.565 (domain ±1000)
+saturated (|z|>10):      11.71%
+--------------------------------------------------
+float accuracy:          95.61%
+circuit accuracy:        95.61%
+accuracy delta:          +0.0000 pp
+label agreement:         100.00%
+max |dp|:                0.000230
+mean |dp|:               0.000017
+float AUC:               0.990915
+circuit AUC:             0.990915
+AUC delta:               -0.000000

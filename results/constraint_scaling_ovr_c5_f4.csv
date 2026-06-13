@@ -1,0 +1,3 @@
+batch,classes,features,mode,units,constraints,compile_ms
+10,5,4,ovr,50,665112,484
+20,5,4,ovr,100,1215862,925

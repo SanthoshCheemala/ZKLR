@@ -13,6 +13,7 @@ func main() {
 	batch := flag.Int("batch", 80, "batch size (must match prover)")
 	features := flag.Int("features", 4, "number of model features")
 	outPrefix := flag.String("out", "Verifier", "output file prefix")
+	modeFlag := flag.String("mode", "label", "circuit output mode: 'label' or 'prob' (must match prover)")
 	help := flag.Bool("help", false, "show usage information")
 	flag.Parse()
 
@@ -21,18 +22,24 @@ func main() {
 		return
 	}
 
-	exportVK(*batch, *features, *outPrefix)
+	mode, err := prover.ParseOutputMode(*modeFlag)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "✗ %v\n", err)
+		os.Exit(1)
+	}
+
+	exportVK(*batch, *features, mode, *outPrefix)
 }
 
 // exportVK generates and exports the verification key for Solidity contract generation.
-func exportVK(batchSize, numFeatures int, outPrefix string) {
+func exportVK(batchSize, numFeatures int, mode prover.OutputMode, outPrefix string) {
 	fmt.Println("════════════════════════════════════════════════════════════")
 	fmt.Println("  ZKLR Verification Key Export Tool")
 	fmt.Println("════════════════════════════════════════════════════════════")
-	fmt.Printf("\n[1] Generating Setup (batch=%d, features=%d)...\n", batchSize, numFeatures)
+	fmt.Printf("\n[1] Generating Setup (batch=%d, features=%d, mode=%s)...\n", batchSize, numFeatures, mode)
 
 	// Setup: compile circuit and load/regenerate keys
-	setup, err := prover.RunBatchSetup(batchSize, numFeatures)
+	setup, err := prover.RunBatchSetup(batchSize, numFeatures, mode)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "✗ Setup failed: %v\n", err)
 		os.Exit(1)

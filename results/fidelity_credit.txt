@@ -1,0 +1,17 @@
+ZKLR Fidelity Report — credit
+==================================================
+samples (train/test):    21000/9000
+features:                23
+quantization:            min-max scaled to integers in [0, 4000] (train statistics)
+max |z| on test:         21.401 (domain ±1000)
+saturated (|z|>10):      0.03%
+--------------------------------------------------
+float accuracy:          80.84%
+circuit accuracy:        80.84%
+accuracy delta:          +0.0000 pp
+label agreement:         100.00%
+max |dp|:                0.000254
+mean |dp|:               0.000080
+float AUC:               0.715083
+circuit AUC:             0.715079
+AUC delta:               -0.000004

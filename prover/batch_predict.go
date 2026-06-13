@@ -12,42 +12,55 @@ import (
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/plonk"
+	"github.com/consensys/gnark/constraint"
+	csbn254 "github.com/consensys/gnark/constraint/bn254"
 	"github.com/consensys/gnark/frontend"
 
 	"github.com/santhoshcheemala/ZKLR/circuit"
 )
 
-// keySet holds a private copy of proving/verification keys for one worker.
+// keySet holds a private copy of proving/verification keys and constraint
+// system for one worker. All three must be per-worker: gnark's cs.Solve()
+// (called inside plonk.Prove) mutates the logderivlookup blueprint state,
+// so sharing a CS across concurrent goroutines corrupts the sigmoid table.
 type keySet struct {
 	pk plonk.ProvingKey
 	vk plonk.VerifyingKey
+	cs constraint.ConstraintSystem
 }
 
-// cloneKeys creates a deep copy of keys by serializing and deserializing.
-func cloneKeys(pk plonk.ProvingKey, vk plonk.VerifyingKey) (*keySet, error) {
-	// Serialize PK
+// cloneKeys creates a deep copy of pk, vk, and cs by serializing and
+// deserializing each. This is the only safe way to get independent CS copies
+// because gnark's in-memory Clone does not deep-copy blueprint table data.
+func cloneKeys(pk plonk.ProvingKey, vk plonk.VerifyingKey, cs constraint.ConstraintSystem) (*keySet, error) {
 	var pkBuf bytes.Buffer
 	if _, err := pk.WriteTo(&pkBuf); err != nil {
 		return nil, fmt.Errorf("serialize pk: %w", err)
 	}
-	// Deserialize PK
 	newPK := plonk.NewProvingKey(ecc.BN254)
 	if _, err := newPK.(io.ReaderFrom).ReadFrom(&pkBuf); err != nil {
 		return nil, fmt.Errorf("deserialize pk: %w", err)
 	}
 
-	// Serialize VK
 	var vkBuf bytes.Buffer
 	if _, err := vk.WriteTo(&vkBuf); err != nil {
 		return nil, fmt.Errorf("serialize vk: %w", err)
 	}
-	// Deserialize VK
 	newVK := plonk.NewVerifyingKey(ecc.BN254)
 	if _, err := newVK.(io.ReaderFrom).ReadFrom(&vkBuf); err != nil {
 		return nil, fmt.Errorf("deserialize vk: %w", err)
 	}
 
-	return &keySet{pk: newPK, vk: newVK}, nil
+	var csBuf bytes.Buffer
+	if _, err := cs.WriteTo(&csBuf); err != nil {
+		return nil, fmt.Errorf("serialize cs: %w", err)
+	}
+	newCS := new(csbn254.SparseR1CS)
+	if _, err := newCS.ReadFrom(&csBuf); err != nil {
+		return nil, fmt.Errorf("deserialize cs: %w", err)
+	}
+
+	return &keySet{pk: newPK, vk: newVK, cs: newCS}, nil
 }
 
 // BatchPredResult holds results for one batch of predictions.
@@ -195,7 +208,7 @@ func BatchPredictParallel(
 	keyPool := make(chan *keySet, keyPoolSize)
 	pooled := 0
 	for i := 0; i < keyPoolSize; i++ {
-		keys, err := cloneKeys(setup.ProvingKey, setup.VerificationKey)
+		keys, err := cloneKeys(setup.ProvingKey, setup.VerificationKey, setup.ConstraintSystem)
 		if err != nil {
 			fmt.Printf("    Warning: failed to clone keys %d, shrinking pool: %v\n", i, err)
 			continue
@@ -204,9 +217,9 @@ func BatchPredictParallel(
 		pooled++
 	}
 	if pooled == 0 {
-		// No clone succeeded — run sequentially with the original keys.
+		// No clone succeeded — fall back to sequential (1 worker, original cs).
 		fmt.Println("    Warning: key cloning failed entirely; running with a single shared key (1 concurrent prover)")
-		keyPool <- &keySet{pk: setup.ProvingKey, vk: setup.VerificationKey}
+		keyPool <- &keySet{pk: setup.ProvingKey, vk: setup.VerificationKey, cs: setup.ConstraintSystem}
 	}
 
 	results := make([]*BatchPredResult, len(batches))
@@ -275,9 +288,9 @@ func BatchPredictParallel(
 			keys := <-keyPool
 			defer func() { keyPool <- keys }()
 
-			// Prove using worker's private key copy
+			// Prove using worker's private key copy and its own CS clone.
 			proveStart := time.Now()
-			proof, err := plonk.Prove(setup.ConstraintSystem, keys.pk, witness)
+			proof, err := plonk.Prove(keys.cs, keys.pk, witness)
 			result.ProveTime = time.Since(proveStart)
 
 			if err != nil {

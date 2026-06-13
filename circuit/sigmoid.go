@@ -8,13 +8,13 @@
 //
 // Table structure:
 //
-//	Index i → sigmoid(i / 2^10), scaled by 2^16
+//	Index i → sigmoid(i / 2^10 - SigmoidOffset), scaled by 2^16
 //
-//	Example: i = 1024 → z = 1.0 → sigmoid(1.0) = 0.7311 → stored as 47910
+//	Example: i = 11264 → z = 11264/1024 - 10 = 1.0 → sigmoid(1.0) = 0.7311 → stored as 47910
 //
-// The table covers z ∈ [0, MaxInput] = [0, 8].
-// For z < 0: sigmoid(-z) = 1 - sigmoid(z), handled in witness computation.
-// For z > 8: sigmoid(z) ≈ 1.0, clamped.
+// The table covers z ∈ [-SigmoidOffset, +SigmoidOffset] = [-10, +10]
+// (20·1024 + 1 = 20481 entries). Outside this range sigmoid is saturated
+// (< 5e-5 from 0 or 1); the circuit clamps the index to the table bounds.
 package circuit
 
 import (
@@ -38,7 +38,7 @@ const SigmoidRange = 20
 // Index i represents z = (i / 2^10) - 10
 // Total entries = 20 * 1024 + 1 = 20481
 func BuildSigmoidTable() []*big.Int {
-	tableSize := SigmoidRange*(1<<InputPrecision) + 1 // 32769 entries
+	tableSize := SigmoidRange*(1<<InputPrecision) + 1 // 20*1024 + 1 = 20481 entries
 	table := make([]*big.Int, tableSize)
 
 	for i := 0; i < tableSize; i++ {

@@ -46,17 +46,17 @@ z_linear := api.Add(wx, c.B) // W*X + B → scaled by 2^32
 ## 3. The Shifted Positive Offset (The "Why")
 
 **What:** 
-Before we look up the sigmoid value for $Z$, we add a massive offset value (`16 * 2^32`) to it.
+Before we look up the sigmoid value for $Z$, we add a large constant offset (`ModelOffset * 2^32` with `ModelOffset = 1000`) to it.
 
 **Why:**
 The equation `Z = W*X + B` often produces **negative numbers** (e.g., for failing students). In standard computing, `-5` is stored via two's complement. But in a Prime Finite Field, `-5` wraps completely around the modulus and becomes a massive positive number (e.g., `2188824287...5612`). If we feed that massive wrapped number into a lookup table array, the circuit crashes or accesses invalid memory.
 
 **How:**
-We know the useful active range of the sigmoid function is $Z \in [-10, +10]$ (sufficient for all marks 0-100 with our model).
-So inside the circuit, we shift the mathematical graph to the right by **adding 10** to $Z$, guaranteeing that the Z-value fed to the lookup table is strictly between 0 and 20.
+We know the useful active range of the sigmoid function is $Z \in [-10, +10]$ (`SigmoidOffset = 10`); outside it sigmoid is saturated.
+Inside the circuit we add `ModelOffset = 1000` to $Z$, guaranteeing the shifted value is strictly positive even for large negative model outputs. After truncation to table precision, the index is clamped to the window `[(1000-10)·2^10, (1000+10)·2^10]` and rebased so the lookup covers exactly $Z \in [-10, +10]$.
 ```go
-// Add offset to make strictly positive. 10 * 2^32:
-offsetScaled := new(big.Int).Lsh(big.NewInt(10), 32)
+// Add offset to make strictly positive. ModelOffset * 2^32:
+offsetScaled := new(big.Int).Lsh(big.NewInt(ModelOffset), Precision)
 z_shifted := api.Add(z_linear, offsetScaled)
 ```
 

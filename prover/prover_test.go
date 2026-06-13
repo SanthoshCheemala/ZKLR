@@ -204,7 +204,7 @@ func TestSigmoidTable(t *testing.T) {
 // ─── Test: Batch Predict ─────────────────────────────────────
 
 func TestBatchPredict(t *testing.T) {
-	setup, err := RunBatchSetup(5, 2)
+	setup, err := RunBatchSetup(5, 2, ModeProb)
 	if err != nil {
 		t.Fatalf("Batch setup failed: %v", err)
 	}

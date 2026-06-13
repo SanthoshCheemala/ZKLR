@@ -1,0 +1,7 @@
+  R1CS constraints: 170672 (compile 568.775084ms)
+  Setup: 10.795358375s
+  Prove times:   [483.016791ms 488.545917ms 492.971792ms]
+  Verify times:  [1.871667ms 1.925625ms 1.889667ms]
+  Proof size:    196 bytes
+  VK size:       6928 bytes
+  Prove/sample:  0.025s (last run / batch)

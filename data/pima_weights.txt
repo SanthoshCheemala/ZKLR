@@ -1,0 +1,8 @@
+# pima: float LR weights (trained on quantized integer features)
+# scale factors: pregnancies×1, glucose×1, blood_pressure×1, skin_thickness×1, insulin×1, bmi×10, pedigree×1000, age×1
+# train/test: 537/231, seed=42, stratified
+# features: pregnancies,glucose,blood_pressure,skin_thickness,insulin,bmi,pedigree,age
+Weights: 0.13954789032949597,0.036670124816171344,-0.011015321501604959,-0.0024958907160627128,-0.0007806764037741493,0.009318272799148136,0.000711526125261274,0.0077389986735475124
+Bias: -8.577451714830836
+# run:
+# go run ./cmd/batch_predict -dataset=data/pima_test.csv -weights="0.13954789032949597,0.036670124816171344,-0.011015321501604959,-0.0024958907160627128,-0.0007806764037741493,0.009318272799148136,0.000711526125261274,0.0077389986735475124" -bias=-8.577451714830836

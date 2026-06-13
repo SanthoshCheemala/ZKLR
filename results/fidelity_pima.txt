@@ -1,0 +1,17 @@
+ZKLR Fidelity Report — pima
+==================================================
+samples (train/test):    537/231
+features:                8
+quantization:            scale factors: pregnancies×1, glucose×1, blood_pressure×1, skin_thickness×1, insulin×1, bmi×10, pedigree×1000, age×1
+max |z| on test:         6.445 (domain ±1000)
+saturated (|z|>10):      0.00%
+--------------------------------------------------
+float accuracy:          74.46%
+circuit accuracy:        74.46%
+accuracy delta:          +0.0000 pp
+label agreement:         100.00%
+max |dp|:                0.000241
+mean |dp|:               0.000075
+float AUC:               0.838189
+circuit AUC:             0.838107
+AUC delta:               -0.000082

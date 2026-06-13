@@ -1,0 +1,16 @@
+ZKLR Amortization Cost Model
+============================================================
+constraints source: results/constraint_scaling_f9.csv (features=9, mode=label)
+
+Constraints(B) = 107,717 + 11,145.0 * B    (R^2 = 1.000000)
+  shared cost (table + commitment): 107,717 constraints
+  marginal cost per sample:         11,145.0 constraints
+  amortization: at B=80 each sample carries 12,491 constraints vs 118,862 unbatched (9.5x reduction)
+
+ batch     measured       fitted   residual
+     1      118,862      118,862          0
+     5      163,442      163,442          0
+    10      219,167      219,167          0
+    20      330,617      330,617          0
+    40      553,517      553,517          0
+    80      999,317      999,317         -0

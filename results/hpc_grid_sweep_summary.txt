@@ -1,0 +1,30 @@
+HPC Grid Sweep Summary
+------------------------------------------------
+B=10, W=1, Wall=0.353s
+B=10, W=4, Wall=0.289s
+B=10, W=8, Wall=0.309s
+B=10, W=16, Wall=0.319s
+B=10, W=32, Wall=0.298s
+B=10, W=64, Wall=0.310s
+B=10, W=96, Wall=0.307s
+B=20, W=1, Wall=0.341s
+B=20, W=4, Wall=0.285s
+B=20, W=8, Wall=0.290s
+B=20, W=16, Wall=0.298s
+B=20, W=32, Wall=0.310s
+B=20, W=64, Wall=0.292s
+B=20, W=96, Wall=0.288s
+B=40, W=1, Wall=0.346s
+B=40, W=4, Wall=0.307s
+B=40, W=8, Wall=0.297s
+B=40, W=16, Wall=0.786s
+B=40, W=32, Wall=0.753s
+B=40, W=64, Wall=0.786s
+B=40, W=96, Wall=0.817s
+B=80, W=1, Wall=0.182s
+B=80, W=4, Wall=0.160s
+B=80, W=8, Wall=0.163s
+B=80, W=16, Wall=0.468s
+B=80, W=32, Wall=0.498s
+B=80, W=64, Wall=0.511s
+B=80, W=96, Wall=0.452s

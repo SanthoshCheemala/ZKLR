@@ -1,0 +1,588 @@
+Results for: results/grid_b10_w1.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            300 (size=10)
+    Workers:            1
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         2.923330318s
+    Total predict time: 17m39.772155946s
+    Total prove time:   17m38.091638497s (sequential sum)
+    Total verify time:  1.11419007s
+    Avg prove/batch:    3.526972128s
+    Avg prove/sample:   0.353s
+    Wall-clock/sample:  0.353s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  5.7x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b10_w4.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            300 (size=10)
+    Workers:            4
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         2.715180987s
+    Total predict time: 14m25.77793034s
+    Total prove time:   57m4.46007706s (sequential sum)
+    Total verify time:  9.583316399s
+    Avg prove/batch:    11.414866923s
+    Avg prove/sample:   1.141s
+    Wall-clock/sample:  0.289s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.9x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b10_w8.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            300 (size=10)
+    Workers:            8
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         3.017820659s
+    Total predict time: 15m26.850045232s
+    Total prove time:   2h1m18.270930041s (sequential sum)
+    Total verify time:  21.628266893s
+    Avg prove/batch:    24.2609031s
+    Avg prove/sample:   2.426s
+    Wall-clock/sample:  0.309s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.5x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b10_w16.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            300 (size=10)
+    Workers:            16
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         3.057568688s
+    Total predict time: 15m58.091632776s
+    Total prove time:   4h6m44.464576478s (sequential sum)
+    Total verify time:  52.685692771s
+    Avg prove/batch:    49.348215254s
+    Avg prove/sample:   4.935s
+    Wall-clock/sample:  0.319s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.3x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b10_w32.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            300 (size=10)
+    Workers:            32
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         3.023567496s
+    Total predict time: 14m54.988393245s
+    Total prove time:   3h50m25.797734905s (sequential sum)
+    Total verify time:  55.067846049s
+    Avg prove/batch:    46.085992449s
+    Avg prove/sample:   4.609s
+    Wall-clock/sample:  0.298s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.7x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b10_w64.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            300 (size=10)
+    Workers:            64
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         2.610478412s
+    Total predict time: 15m30.742492428s
+    Total prove time:   3h59m49.800913819s (sequential sum)
+    Total verify time:  47.348319068s
+    Avg prove/batch:    47.966003046s
+    Avg prove/sample:   4.797s
+    Wall-clock/sample:  0.310s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.4x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b10_w96.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            300 (size=10)
+    Workers:            96
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         2.679635938s
+    Total predict time: 15m21.80309463s
+    Total prove time:   3h57m41.051790249s (sequential sum)
+    Total verify time:  46.855730377s
+    Avg prove/batch:    47.5368393s
+    Avg prove/sample:   4.754s
+    Wall-clock/sample:  0.307s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.5x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b20_w1.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            150 (size=20)
+    Workers:            1
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         5.023327609s
+    Total predict time: 17m3.917499099s
+    Total prove time:   17m2.084945027s (sequential sum)
+    Total verify time:  559.443235ms
+    Avg prove/batch:    6.813899633s
+    Avg prove/sample:   0.341s
+    Wall-clock/sample:  0.341s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  5.9x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b20_w4.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            150 (size=20)
+    Workers:            4
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         5.059955383s
+    Total predict time: 14m15.118596184s
+    Total prove time:   56m15.472301858s (sequential sum)
+    Total verify time:  7.215281732s
+    Avg prove/batch:    22.503148679s
+    Avg prove/sample:   1.125s
+    Wall-clock/sample:  0.285s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  7.0x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b20_w8.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            150 (size=20)
+    Workers:            8
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         5.004274736s
+    Total predict time: 14m28.850531015s
+    Total prove time:   1h51m57.436029484s (sequential sum)
+    Total verify time:  17.409147481s
+    Avg prove/batch:    44.782906863s
+    Avg prove/sample:   2.239s
+    Wall-clock/sample:  0.290s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.9x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b20_w16.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            150 (size=20)
+    Workers:            16
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         5.392979155s
+    Total predict time: 14m54.336053309s
+    Total prove time:   3h43m41.459187444s (sequential sum)
+    Total verify time:  38.944704799s
+    Avg prove/batch:    1m29.476394582s
+    Avg prove/sample:   4.474s
+    Wall-clock/sample:  0.298s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.7x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b20_w32.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            150 (size=20)
+    Workers:            32
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         4.782738605s
+    Total predict time: 15m30.810323437s
+    Total prove time:   3h53m32.555160823s (sequential sum)
+    Total verify time:  43.752068212s
+    Avg prove/batch:    1m33.417034405s
+    Avg prove/sample:   4.671s
+    Wall-clock/sample:  0.310s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.4x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b20_w64.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            150 (size=20)
+    Workers:            64
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         4.807116582s
+    Total predict time: 14m34.583340564s
+    Total prove time:   3h38m36.854264715s (sequential sum)
+    Total verify time:  37.191180615s
+    Avg prove/batch:    1m27.445695098s
+    Avg prove/sample:   4.372s
+    Wall-clock/sample:  0.292s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.9x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b20_w96.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            150 (size=20)
+    Workers:            96
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         5.292888998s
+    Total predict time: 14m24.235225232s
+    Total prove time:   3h36m23.905738949s (sequential sum)
+    Total verify time:  33.870220784s
+    Avg prove/batch:    1m26.559371592s
+    Avg prove/sample:   4.328s
+    Wall-clock/sample:  0.288s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.9x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b40_w1.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            75 (size=40)
+    Workers:            1
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         10.822279895s
+    Total predict time: 17m17.152009787s
+    Total prove time:   17m14.138449103s (sequential sum)
+    Total verify time:  301.519408ms
+    Avg prove/batch:    13.788512654s
+    Avg prove/sample:   0.345s
+    Wall-clock/sample:  0.346s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  5.8x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b40_w4.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            75 (size=40)
+    Workers:            4
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         9.547550534s
+    Total predict time: 15m20.868260548s
+    Total prove time:   59m41.243678159s (sequential sum)
+    Total verify time:  7.155591819s
+    Avg prove/batch:    47.749915708s
+    Avg prove/sample:   1.194s
+    Wall-clock/sample:  0.307s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.5x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b40_w8.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            75 (size=40)
+    Workers:            8
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         9.618300506s
+    Total predict time: 14m51.458914863s
+    Total prove time:   1h51m45.780282572s (sequential sum)
+    Total verify time:  15.19807035s
+    Avg prove/batch:    1m29.410403767s
+    Avg prove/sample:   2.235s
+    Wall-clock/sample:  0.297s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.7x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b40_w16.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            75 (size=40)
+    Workers:            16
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         9.738721764s
+    Total predict time: 39m18.662395767s
+    Total prove time:   9h45m49.532248677s (sequential sum)
+    Total verify time:  46.962798057s
+    Avg prove/batch:    7m48.660429982s
+    Avg prove/sample:   11.717s
+    Wall-clock/sample:  0.786s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  2.5x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b40_w32.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            75 (size=40)
+    Workers:            32
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         9.530568144s
+    Total predict time: 37m38.237844675s
+    Total prove time:   9h14m44.126440438s (sequential sum)
+    Total verify time:  29.457996209s
+    Avg prove/batch:    7m23.788352539s
+    Avg prove/sample:   11.095s
+    Wall-clock/sample:  0.753s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  2.7x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b40_w64.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            75 (size=40)
+    Workers:            64
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         9.251454737s
+    Total predict time: 39m18.462632788s
+    Total prove time:   9h45m12.879284937s (sequential sum)
+    Total verify time:  29.586859758s
+    Avg prove/batch:    7m48.171723799s
+    Avg prove/sample:   11.704s
+    Wall-clock/sample:  0.786s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  2.5x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b40_w96.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            75 (size=40)
+    Workers:            96
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         10.68213278s
+    Total predict time: 40m51.910950382s
+    Total prove time:   10h16m2.32786771s (sequential sum)
+    Total verify time:  30.784397714s
+    Avg prove/batch:    8m12.831038236s
+    Avg prove/sample:   12.321s
+    Wall-clock/sample:  0.817s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  2.4x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b80_w1.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            38 (size=80)
+    Workers:            1
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         11.224062216s
+    Total predict time: 9m5.560627928s
+    Total prove time:   9m3.112272245s (sequential sum)
+    Total verify time:  142.096022ms
+    Avg prove/batch:    14.292428216s
+    Avg prove/sample:   0.181s
+    Wall-clock/sample:  0.182s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  11.0x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b80_w4.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            38 (size=80)
+    Workers:            4
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         11.680723521s
+    Total predict time: 7m58.89652998s
+    Total prove time:   29m40.58029981s (sequential sum)
+    Total verify time:  3.168022262s
+    Avg prove/batch:    46.85737631s
+    Avg prove/sample:   0.594s
+    Wall-clock/sample:  0.160s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  12.5x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b80_w8.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            38 (size=80)
+    Workers:            8
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         12.704490239s
+    Total predict time: 8m8.354270482s
+    Total prove time:   57m18.433165334s (sequential sum)
+    Total verify time:  5.944577929s
+    Avg prove/batch:    1m30.485083298s
+    Avg prove/sample:   1.146s
+    Wall-clock/sample:  0.163s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  12.3x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b80_w16.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            38 (size=80)
+    Workers:            16
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         12.643612974s
+    Total predict time: 23m22.902339255s
+    Total prove time:   5h25m55.37514915s (sequential sum)
+    Total verify time:  11.514402799s
+    Avg prove/batch:    8m34.615135503s
+    Avg prove/sample:   6.518s
+    Wall-clock/sample:  0.468s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  4.3x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b80_w32.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            38 (size=80)
+    Workers:            32
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         12.643366047s
+    Total predict time: 24m53.438164943s
+    Total prove time:   5h38m55.377665984s (sequential sum)
+    Total verify time:  10.985906013s
+    Avg prove/batch:    8m55.141517525s
+    Avg prove/sample:   6.778s
+    Wall-clock/sample:  0.498s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  4.0x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b80_w64.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            38 (size=80)
+    Workers:            64
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         12.71600696s
+    Total predict time: 25m32.343474492s
+    Total prove time:   5h57m12.350525305s (sequential sum)
+    Total verify time:  16.12530749s
+    Avg prove/batch:    9m24.00922435s
+    Avg prove/sample:   7.144s
+    Wall-clock/sample:  0.511s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  3.9x
+    ═══════════════════════════════════════════════
+
+
+Results for: results/grid_b80_w96.txt
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            38 (size=80)
+    Workers:            96
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         12.03289838s
+    Total predict time: 22m37.475664084s
+    Total prove time:   5h14m19.198521478s (sequential sum)
+    Total verify time:  14.765895243s
+    Avg prove/batch:    8m16.294697933s
+    Avg prove/sample:   6.286s
+    Wall-clock/sample:  0.452s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  4.4x
+    ═══════════════════════════════════════════════
+
+

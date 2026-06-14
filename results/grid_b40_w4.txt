@@ -1,0 +1,361 @@
+============================================================
+  ZK-LR — Batch Parallel Prediction Pipeline
+============================================================
+  Dataset:    data/test_3000.csv
+  Batch size: 40
+  Workers:    4 (CPUs: 96)
+
+[1] Batch Setup (compile → SRS → keys)...
+[90m19:57:52[0m [32mINF[0m [1mcompiling circuit[0m
+[90m19:57:52[0m [32mINF[0m [1mparsed circuit inputs[0m [36mnbPublic=[0m200 [36mnbSecret=[0m85
+[90m19:57:54[0m [32mINF[0m [1mbuilding constraint builder[0m [36mnbConstraints=[0m542608
+    [cache hit] Loaded keys from results
+    Constraints:   542608
+    Compile time:  2.163987955s
+    Setup time:    6.86994212s
+    PK size:       65569.7 KB
+    VK size:       33.6 KB
+    Total:         9.547550534s
+
+[2] Loading dataset...
+    Loaded 3000 samples
+
+[3] Running batch parallel predictions...
+    Batches: 75 (size=40, workers=4, keys=4)
+    Memory: 256 MB for key pool (64.0 MB × 4 copies)
+[90m19:58:06[0m [32mINF[0m [1mcompiling circuit[0m
+[90m19:58:06[0m [32mINF[0m [1mparsed circuit inputs[0m [36mnbPublic=[0m200 [36mnbSecret=[0m85
+[90m19:58:08[0m [32mINF[0m [1mbuilding constraint builder[0m [36mnbConstraints=[0m542608
+[90m19:58:10[0m [32mINF[0m [1mcompiling circuit[0m
+[90m19:58:10[0m [32mINF[0m [1mparsed circuit inputs[0m [36mnbPublic=[0m200 [36mnbSecret=[0m85
+[90m19:58:12[0m [32mINF[0m [1mbuilding constraint builder[0m [36mnbConstraints=[0m542608
+[90m19:58:14[0m [32mINF[0m [1mcompiling circuit[0m
+[90m19:58:14[0m [32mINF[0m [1mparsed circuit inputs[0m [36mnbPublic=[0m200 [36mnbSecret=[0m85
+[90m19:58:16[0m [32mINF[0m [1mbuilding constraint builder[0m [36mnbConstraints=[0m542608
+[90m19:58:17[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m668.688118
+[90m19:58:17[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m615.123516
+[90m19:58:17[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m676.416113
+[90m19:58:17[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m614.476916
+[90m19:59:05[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48844.285011
+[90m19:59:05[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m90.563818
+[90m19:59:07[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m51173.895552
+[90m19:59:07[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.738748
+[90m19:59:08[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m52452.671128
+[90m19:59:08[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.348318
+[90m19:59:09[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1108.055662
+[90m19:59:09[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m53543.286607
+[90m19:59:09[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m98.6861
+[90m19:59:10[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m503.775064
+[90m19:59:11[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1484.47062
+[90m19:59:12[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1701.563344
+[90m19:59:54[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48814.228389
+[90m19:59:54[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.532383
+[90m19:59:57[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49484.695101
+[90m19:59:57[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.208227
+[90m19:59:58[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48187.134872
+[90m19:59:58[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m5.985804
+[90m19:59:58[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2587.085514
+[90m19:59:58[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49615.796377
+[90m19:59:58[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.349158
+[90m20:00:00[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1845.234843
+[90m20:00:01[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1900.138321
+[90m20:00:01[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2681.895036
+[90m20:00:40[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m45989.711065
+[90m20:00:40[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m495.083825
+[90m20:00:44[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2208.960782
+[90m20:00:44[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47869.391711
+[90m20:00:44[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m108.206603
+[90m20:00:46[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47790.602034
+[90m20:00:46[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.696338
+[90m20:00:46[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48736.566896
+[90m20:00:46[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.62741
+[90m20:00:47[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1305.468514
+[90m20:00:49[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1927.122983
+[90m20:00:51[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m3005.610777
+[90m20:01:26[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46093.405352
+[90m20:01:27[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m504.822651
+[90m20:01:31[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46323.642005
+[90m20:01:31[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.277875
+[90m20:01:32[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2799.841984
+[90m20:01:32[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46498.326056
+[90m20:01:32[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m62.667325
+[90m20:01:33[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46876.43214
+[90m20:01:33[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.331557
+[90m20:01:34[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1298.969577
+[90m20:01:36[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2206.393183
+[90m20:01:38[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m3304.096613
+[90m20:02:16[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49388.702158
+[90m20:02:16[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m204.565419
+[90m20:02:19[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48457.511492
+[90m20:02:19[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m5.20844
+[90m20:02:20[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47929.137991
+[90m20:02:20[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m2.856197
+[90m20:02:20[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1329.061459
+[90m20:02:21[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47891.714015
+[90m20:02:21[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.380778
+[90m20:02:22[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1130.44209
+[90m20:02:23[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1433.478753
+[90m20:02:24[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2596.950196
+[90m20:03:06[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49334.022624
+[90m20:03:06[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.088701
+[90m20:03:07[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47721.91959
+[90m20:03:07[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.243965
+[90m20:03:08[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48265.757879
+[90m20:03:08[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.579092
+[90m20:03:09[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2130.886879
+[90m20:03:09[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48099.032358
+[90m20:03:09[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.136444
+[90m20:03:10[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1363.43709
+[90m20:03:11[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1308.464345
+[90m20:03:11[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1204.873075
+[90m20:03:53[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47658.515424
+[90m20:03:53[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m6.172245
+[90m20:03:56[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48672.963964
+[90m20:03:56[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.658341
+[90m20:03:57[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47791.033668
+[90m20:03:57[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.778435
+[90m20:03:57[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2199.034018
+[90m20:03:58[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49599.326504
+[90m20:03:58[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m5.318746
+[90m20:03:59[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1418.314267
+[90m20:04:00[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1373.573613
+[90m20:04:02[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2687.47379
+[90m20:04:42[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49000.074552
+[90m20:04:42[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m200.651358
+[90m20:04:45[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49117.315824
+[90m20:04:45[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.235617
+[90m20:04:46[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48776.573702
+[90m20:04:46[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m105.652557
+[90m20:04:46[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1535.918589
+[90m20:04:47[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49293.824307
+[90m20:04:47[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.604878
+[90m20:04:48[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1175.298354
+[90m20:04:48[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1080.066365
+[90m20:04:51[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2589.54797
+[90m20:05:31[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48688.91963
+[90m20:05:32[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m593.708038
+[90m20:05:33[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48106.484766
+[90m20:05:33[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m176.810132
+[90m20:05:34[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47801.250443
+[90m20:05:34[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m286.721786
+[90m20:05:34[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1214.918644
+[90m20:05:35[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48091.458262
+[90m20:05:35[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m5.267231
+[90m20:05:36[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1422.147023
+[90m20:05:37[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1299.566313
+[90m20:05:39[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m3296.875873
+[90m20:06:17[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m45116.256864
+[90m20:06:17[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.889704
+[90m20:06:21[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47990.293091
+[90m20:06:21[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m102.564763
+[90m20:06:23[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2382.111015
+[90m20:06:23[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49206.553145
+[90m20:06:24[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m395.206851
+[90m20:06:24[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1941.854036
+[90m20:06:25[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49889.062884
+[90m20:06:25[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.112749
+[90m20:06:28[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2503.824572
+[90m20:06:31[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m4909.641561
+[90m20:07:07[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m50518.734658
+[90m20:07:08[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46497.424014
+[90m20:07:08[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m100.014841
+[90m20:07:08[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m385.734338
+[90m20:07:13[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48893.640553
+[90m20:07:13[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2191.652299
+[90m20:07:13[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m486.942164
+[90m20:07:13[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2400.480284
+[90m20:07:15[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49219.809504
+[90m20:07:15[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.11834
+[90m20:07:18[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m3277.55615
+[90m20:07:20[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m3385.032724
+[90m20:07:59[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m51405.379477
+[90m20:07:59[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m105.920571
+[90m20:08:00[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m52688.147017
+[90m20:08:00[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m7.799653
+[90m20:08:03[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49912.407736
+[90m20:08:03[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m86.769086
+[90m20:08:03[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1814.253895
+[90m20:08:04[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m48918.628378
+[90m20:08:04[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.903398
+[90m20:08:04[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1545.271274
+[90m20:08:07[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2697.872319
+[90m20:08:08[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2933.112018
+[90m20:08:50[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m50696.896809
+[90m20:08:50[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m402.797353
+[90m20:08:51[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m50938.768395
+[90m20:08:51[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.652301
+[90m20:08:52[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49400.114405
+[90m20:08:52[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m8.424973
+[90m20:08:53[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m49208.042254
+[90m20:08:53[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.815834
+[90m20:08:53[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m611.245207
+[90m20:08:54[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m686.007566
+[90m20:08:54[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1018.677288
+[90m20:08:54[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1020.46813
+[90m20:09:36[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m45699.960779
+[90m20:09:37[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m312.138258
+[90m20:09:38[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m45542.638177
+[90m20:09:38[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m2.896984
+[90m20:09:39[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47465.006982
+[90m20:09:39[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m188.72921
+[90m20:09:39[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46428.24685
+[90m20:09:39[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.008903
+[90m20:09:40[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1372.138672
+[90m20:09:40[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m665.53426
+[90m20:09:41[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1316.638945
+[90m20:09:41[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1757.68127
+[90m20:10:22[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m45892.336547
+[90m20:10:22[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m10.045007
+[90m20:10:24[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m45647.001351
+[90m20:10:24[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m403.561009
+[90m20:10:26[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1196.470977
+[90m20:10:26[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46393.461477
+[90m20:10:26[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m265.576591
+[90m20:10:27[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47507.708428
+[90m20:10:27[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.281814
+[90m20:10:27[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1445.772386
+[90m20:10:29[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1759.91825
+[90m20:10:30[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2304.915681
+[90m20:11:10[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47705.079276
+[90m20:11:10[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m6.429648
+[90m20:11:11[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47105.397492
+[90m20:11:11[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m86.407997
+[90m20:11:13[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46487.670719
+[90m20:11:13[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.515614
+[90m20:11:14[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1510.694642
+[90m20:11:14[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47745.911986
+[90m20:11:14[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m63.255049
+[90m20:11:14[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1406.449148
+[90m20:11:15[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1197.484916
+[90m20:11:18[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m3140.684707
+[90m20:11:57[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46585.603827
+[90m20:11:57[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m6.332656
+[90m20:11:58[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m47006.708881
+[90m20:11:58[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m205.753745
+[90m20:11:59[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m45613.598845
+[90m20:11:59[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m68.424238
+[90m20:12:00[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1015.817264
+[90m20:12:01[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46813.683007
+[90m20:12:01[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m2.603705
+[90m20:12:01[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1315.968707
+[90m20:12:01[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1381.51084
+[90m20:12:04[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m2607.551379
+[90m20:12:43[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m45978.440207
+[90m20:12:43[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m6.677411
+[90m20:12:44[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m45712.848755
+[90m20:12:44[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m5.225644
+[90m20:12:45[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46414.179435
+[90m20:12:45[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m4.905965
+[90m20:12:47[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1582.878192
+[90m20:12:47[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1307.547598
+[90m20:12:47[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m46576.720546
+[90m20:12:47[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.34894
+[90m20:12:47[0m DBG constraint system solver done [36mnbConstraints=[0m542608 [36mtook=[0m1481.808473
+[90m20:13:21[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m37809.25354
+[90m20:13:21[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m186.332849
+[90m20:13:22[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m37117.7035
+[90m20:13:22[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.419252
+[90m20:13:22[0m DBG prover done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mnbConstraints=[0m542608 [36mtook=[0m37403.739375
+[90m20:13:22[0m DBG verifier done [36mbackend=[0mplonk [36mcurve=[0mbn254 [36mtook=[0m3.178861
+
+[4] Results
+    ┌────────┬──────────┬────────┬──────────────┬──────────────┬──────────┐
+    │ Batch  │ Samples  │ Status │ Prove Time   │ Verify Time  │ Proof    │
+    ├────────┼──────────┼────────┼──────────────┼──────────────┼──────────┤
+    │      0 │       40 │      ✓ │      51.174s │      3.932ms │  584 B   │
+    │      1 │       40 │      ✓ │      52.453s │      3.538ms │  584 B   │
+    │      2 │       40 │      ✓ │      48.845s │     90.874ms │  584 B   │
+    │      3 │       40 │      ✓ │      53.543s │     99.344ms │  584 B   │
+    │      4 │       40 │      ✓ │      48.814s │       3.74ms │  584 B   │
+    │      5 │       40 │      ✓ │      49.485s │      4.395ms │  584 B   │
+    │      6 │       40 │      ✓ │      49.616s │      3.469ms │  584 B   │
+    │      7 │       40 │      ✓ │      48.187s │      6.303ms │  584 B   │
+    │      8 │       40 │      ✓ │       45.99s │    495.283ms │  584 B   │
+    │      9 │       40 │      ✓ │       47.87s │    108.428ms │  584 B   │
+    │     10 │       40 │      ✓ │      48.737s │      3.799ms │  584 B   │
+    │     11 │       40 │      ✓ │      47.791s │      3.925ms │  584 B   │
+    │     12 │       40 │      ✓ │      46.094s │    505.032ms │  584 B   │
+    │     13 │       40 │      ✓ │      46.324s │      3.499ms │  584 B   │
+    │     14 │       40 │      ✓ │      46.499s │     62.841ms │  584 B   │
+    │     15 │       40 │      ✓ │      46.877s │      3.404ms │  584 B   │
+    │     16 │       40 │      ✓ │      49.389s │    204.759ms │  584 B   │
+    │     17 │       40 │      ✓ │      48.458s │      5.418ms │  584 B   │
+    │     18 │       40 │      ✓ │      47.929s │      2.999ms │  584 B   │
+    │     19 │       40 │      ✓ │      47.892s │      3.618ms │  584 B   │
+    │     20 │       40 │      ✓ │      49.334s │      3.242ms │  584 B   │
+    │     21 │       40 │      ✓ │      47.722s │      4.453ms │  584 B   │
+    │     22 │       40 │      ✓ │      48.266s │      4.787ms │  584 B   │
+    │     23 │       40 │      ✓ │      48.099s │      4.398ms │  584 B   │
+    │     24 │       40 │      ✓ │      47.659s │      6.404ms │  584 B   │
+    │     25 │       40 │      ✓ │      48.673s │      4.858ms │  584 B   │
+    │     26 │       40 │      ✓ │        49.6s │      5.558ms │  584 B   │
+    │     27 │       40 │      ✓ │      47.791s │      5.056ms │  584 B   │
+    │     28 │       40 │      ✓ │          49s │    200.873ms │  584 B   │
+    │     29 │       40 │      ✓ │      49.117s │      3.426ms │  584 B   │
+    │     30 │       40 │      ✓ │      48.777s │    106.014ms │  584 B   │
+    │     31 │       40 │      ✓ │      49.294s │      3.802ms │  584 B   │
+    │     32 │       40 │      ✓ │      48.694s │     593.92ms │  584 B   │
+    │     33 │       40 │      ✓ │      48.107s │    177.156ms │  584 B   │
+    │     34 │       40 │      ✓ │      47.802s │    287.071ms │  584 B   │
+    │     35 │       40 │      ✓ │      48.092s │      5.456ms │  584 B   │
+    │     36 │       40 │      ✓ │      45.117s │     82.144ms │  584 B   │
+    │     37 │       40 │      ✓ │       47.99s │    102.938ms │  584 B   │
+    │     38 │       40 │      ✓ │      49.207s │     396.66ms │  584 B   │
+    │     39 │       40 │      ✓ │      49.889s │      4.279ms │  584 B   │
+    │     40 │       40 │      ✓ │      50.519s │    385.984ms │  584 B   │
+    │     41 │       40 │      ✓ │      46.498s │    100.349ms │  584 B   │
+    │     42 │       40 │      ✓ │      48.906s │     487.22ms │  584 B   │
+    │     43 │       40 │      ✓ │       49.22s │      4.194ms │  584 B   │
+    │     44 │       40 │      ✓ │      52.688s │      7.937ms │  584 B   │
+    │     45 │       40 │      ✓ │      51.406s │    106.275ms │  584 B   │
+    │     46 │       40 │      ✓ │      49.913s │     86.961ms │  584 B   │
+    │     47 │       40 │      ✓ │      48.919s │      4.098ms │  584 B   │
+    │     48 │       40 │      ✓ │      50.697s │    483.446ms │  584 B   │
+    │     49 │       40 │      ✓ │      50.939s │      4.855ms │  584 B   │
+    │     50 │       40 │      ✓ │        49.4s │      8.908ms │  584 B   │
+    │     51 │       40 │      ✓ │      49.284s │      3.981ms │  584 B   │
+    │     52 │       40 │      ✓ │        45.7s │    312.489ms │  584 B   │
+    │     53 │       40 │      ✓ │      47.465s │    189.098ms │  584 B   │
+    │     54 │       40 │      ✓ │      45.543s │      3.096ms │  584 B   │
+    │     55 │       40 │      ✓ │      46.428s │      3.105ms │  584 B   │
+    │     56 │       40 │      ✓ │      45.893s │     10.157ms │  584 B   │
+    │     57 │       40 │      ✓ │      45.647s │    403.733ms │  584 B   │
+    │     58 │       40 │      ✓ │      47.508s │      3.507ms │  584 B   │
+    │     59 │       40 │      ✓ │      46.394s │    265.764ms │  584 B   │
+    │     60 │       40 │      ✓ │      47.705s │      6.518ms │  584 B   │
+    │     61 │       40 │      ✓ │      47.106s │     86.596ms │  584 B   │
+    │     62 │       40 │      ✓ │      47.746s │     63.551ms │  584 B   │
+    │     63 │       40 │      ✓ │      46.488s │      4.763ms │  584 B   │
+    │     64 │       40 │      ✓ │      46.586s │      6.493ms │  584 B   │
+    │     65 │       40 │      ✓ │      47.007s │    205.958ms │  584 B   │
+    │     66 │       40 │      ✓ │      45.614s │      68.56ms │  584 B   │
+    │     67 │       40 │      ✓ │      46.814s │      2.749ms │  584 B   │
+    │     68 │       40 │      ✓ │      45.979s │      6.779ms │  584 B   │
+    │     69 │       40 │      ✓ │      46.414s │      5.133ms │  584 B   │
+    │     70 │       40 │      ✓ │      45.713s │      5.303ms │  584 B   │
+    │     71 │       40 │      ✓ │      46.577s │       3.48ms │  584 B   │
+    │     72 │       40 │      ✓ │      37.809s │    186.537ms │  584 B   │
+    │     73 │       40 │      ✓ │      37.118s │      3.584ms │  584 B   │
+    │     74 │       40 │      ✓ │      37.404s │      3.337ms │  584 B   │
+    └────────┴──────────┴────────┴──────────────┴──────────────┴──────────┘
+
+[5] Summary
+    ═══════════════════════════════════════════════
+    Samples:            3000
+    Batches:            75 (size=40)
+    Workers:            4
+    Correct:            2120 / 3000
+    Accuracy:           70.67%
+    ───────────────────────────────────────────────
+    Setup time:         9.547550534s
+    Total predict time: 15m20.868260548s
+    Total prove time:   59m41.243678159s (sequential sum)
+    Total verify time:  7.155591819s
+    Avg prove/batch:    47.749915708s
+    Avg prove/sample:   1.194s
+    Wall-clock/sample:  0.307s
+    Proof size:         584 bytes (per batch, constant)
+    Speedup vs single:  6.5x
+    ═══════════════════════════════════════════════
+
+    Results saved → results/batch_prediction_results.txt

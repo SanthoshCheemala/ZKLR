@@ -1,0 +1,1590 @@
+{
+  "timestamp": "2026-03-18T16:25:05+05:30",
+  "system": "2f399cd77c0c",
+  "cpu": "AMD EPYC 7413 24-Core Processor",
+  "total_cores": 96,
+  "total_memory_gb": "188",
+  "train_size": 10000,
+  "test_sizes": [1000,2000,3000],
+  "worker_counts": [1,2,4,8,16,32,64],
+  "batch_sizes": [10,20,40,80,100],
+  "weights": "0.024892875697733796,0.022968700680860033,0.02479360204597503,0.024959922786682482",
+  "bias": -4.8863934724574944,
+  "results": [
+    {
+      "dataset_size": 1000,
+      "workers": 1,
+      "batch_size": 10,
+      "samples": 1000,
+      "constraints": 213118,
+      "setup_time_s": 2.657983149,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.377,
+      "accuracy": 71.60,
+      "speedup": 5.3
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 2,
+      "batch_size": 10,
+      "samples": 1000,
+      "constraints": 213118,
+      "setup_time_s": 2.826618914,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.319,
+      "accuracy": 71.60,
+      "speedup": 6.3
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 4,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.561189261,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 8,
+      "batch_size": 10,
+      "samples": 1000,
+      "constraints": 213118,
+      "setup_time_s": 2.616159559,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 4.419349397,
+      "per_sample_s": 0.295,
+      "accuracy": 71.60,
+      "speedup": 6.8
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 16,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.679632816,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 32,
+      "batch_size": 10,
+      "samples": 1000,
+      "constraints": 213118,
+      "setup_time_s": 2.689174869,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 12.663038761,
+      "per_sample_s": 0.296,
+      "accuracy": 71.60,
+      "speedup": 6.8
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 64,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.548507099,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 1,
+      "batch_size": 20,
+      "samples": 1000,
+      "constraints": 322948,
+      "setup_time_s": 5.341928411,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.350,
+      "accuracy": 71.60,
+      "speedup": 5.7
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 2,
+      "batch_size": 20,
+      "samples": 1000,
+      "constraints": 322948,
+      "setup_time_s": 5.405436202,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.693735407,
+      "per_sample_s": 0.312,
+      "accuracy": 71.60,
+      "speedup": 6.4
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 4,
+      "batch_size": 20,
+      "samples": 1000,
+      "constraints": 322948,
+      "setup_time_s": 5.149896279,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 2.882319286,
+      "per_sample_s": 0.289,
+      "accuracy": 71.60,
+      "speedup": 6.9
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 8,
+      "batch_size": 20,
+      "samples": 1000,
+      "constraints": 322948,
+      "setup_time_s": 5.140647867,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 6.667125842,
+      "per_sample_s": 0.295,
+      "accuracy": 71.60,
+      "speedup": 6.8
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 16,
+      "batch_size": 20,
+      "samples": 1000,
+      "constraints": 322948,
+      "setup_time_s": 5.50549726,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 11.298327555,
+      "per_sample_s": 0.312,
+      "accuracy": 71.60,
+      "speedup": 6.4
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 32,
+      "batch_size": 20,
+      "samples": 1000,
+      "constraints": 322948,
+      "setup_time_s": 4.979578778,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 8.268242748,
+      "per_sample_s": 0.307,
+      "accuracy": 71.60,
+      "speedup": 6.5
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 64,
+      "batch_size": 20,
+      "samples": 1000,
+      "constraints": 322948,
+      "setup_time_s": 4.971517245,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 8.090157659,
+      "per_sample_s": 0.308,
+      "accuracy": 71.60,
+      "speedup": 6.5
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 1,
+      "batch_size": 40,
+      "samples": 1000,
+      "constraints": 542608,
+      "setup_time_s": 32.440236252,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.345,
+      "accuracy": 71.60,
+      "speedup": 5.8
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 2,
+      "batch_size": 40,
+      "samples": 1000,
+      "constraints": 542608,
+      "setup_time_s": 9.550896878,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.309,
+      "accuracy": 71.60,
+      "speedup": 6.5
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 4,
+      "batch_size": 40,
+      "samples": 1000,
+      "constraints": 542608,
+      "setup_time_s": 9.722349199,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 2.260223421,
+      "per_sample_s": 0.295,
+      "accuracy": 71.60,
+      "speedup": 6.8
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 8,
+      "batch_size": 40,
+      "samples": 1000,
+      "constraints": 542608,
+      "setup_time_s": 8.852683405,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 3.585263371,
+      "per_sample_s": 0.304,
+      "accuracy": 71.60,
+      "speedup": 6.6
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 16,
+      "batch_size": 40,
+      "samples": 1000,
+      "constraints": 542608,
+      "setup_time_s": 9.863960812,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 6.261528657,
+      "per_sample_s": 0.644,
+      "accuracy": 71.60,
+      "speedup": 3.1
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 32,
+      "batch_size": 40,
+      "samples": 1000,
+      "constraints": 542608,
+      "setup_time_s": 10.563242309,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 14.378150587,
+      "per_sample_s": 0.600,
+      "accuracy": 71.60,
+      "speedup": 3.3
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 64,
+      "batch_size": 40,
+      "samples": 0,
+      "constraints": 542608,
+      "setup_time_s": 10.194216868,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 1,
+      "batch_size": 80,
+      "samples": 1000,
+      "constraints": 981928,
+      "setup_time_s": 35.15677094,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.187,
+      "accuracy": 71.60,
+      "speedup": 10.7
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 2,
+      "batch_size": 80,
+      "samples": 1000,
+      "constraints": 981928,
+      "setup_time_s": 11.000926465,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.177,
+      "accuracy": 71.60,
+      "speedup": 11.3
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 4,
+      "batch_size": 80,
+      "samples": 1000,
+      "constraints": 981928,
+      "setup_time_s": 10.966495883,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.220856564,
+      "per_sample_s": 0.169,
+      "accuracy": 71.60,
+      "speedup": 11.8
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 8,
+      "batch_size": 80,
+      "samples": 1000,
+      "constraints": 981928,
+      "setup_time_s": 11.254708509,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.13564635,
+      "per_sample_s": 0.175,
+      "accuracy": 71.60,
+      "speedup": 11.4
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 16,
+      "batch_size": 80,
+      "samples": 1000,
+      "constraints": 981928,
+      "setup_time_s": 11.745258497,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.613659779,
+      "per_sample_s": 0.332,
+      "accuracy": 71.60,
+      "speedup": 6.0
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 32,
+      "batch_size": 80,
+      "samples": 1000,
+      "constraints": 981928,
+      "setup_time_s": 11.895490036,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.188087491,
+      "per_sample_s": 0.312,
+      "accuracy": 71.60,
+      "speedup": 6.4
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 64,
+      "batch_size": 80,
+      "samples": 1000,
+      "constraints": 981928,
+      "setup_time_s": 10.650953766,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 8.205202751,
+      "per_sample_s": 0.312,
+      "accuracy": 71.60,
+      "speedup": 6.4
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 1,
+      "batch_size": 100,
+      "samples": 1000,
+      "constraints": 1201588,
+      "setup_time_s": 0,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.294,
+      "accuracy": 71.60,
+      "speedup": 6.8
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 2,
+      "batch_size": 100,
+      "samples": 1000,
+      "constraints": 1201588,
+      "setup_time_s": 19.422224193,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.272,
+      "accuracy": 71.60,
+      "speedup": 7.4
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 4,
+      "batch_size": 100,
+      "samples": 1000,
+      "constraints": 1201588,
+      "setup_time_s": 19.335738284,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.262,
+      "accuracy": 71.60,
+      "speedup": 7.6
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 8,
+      "batch_size": 100,
+      "samples": 1000,
+      "constraints": 1201588,
+      "setup_time_s": 19.899721466,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 2.236453829,
+      "per_sample_s": 0.550,
+      "accuracy": 71.60,
+      "speedup": 3.6
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 16,
+      "batch_size": 100,
+      "samples": 1000,
+      "constraints": 1201588,
+      "setup_time_s": 20.581646854,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.690858022,
+      "per_sample_s": 0.815,
+      "accuracy": 71.60,
+      "speedup": 2.5
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 32,
+      "batch_size": 100,
+      "samples": 1000,
+      "constraints": 1201588,
+      "setup_time_s": 20.328419572,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.939327149,
+      "per_sample_s": 0.736,
+      "accuracy": 71.60,
+      "speedup": 2.7
+    }
+,
+    {
+      "dataset_size": 1000,
+      "workers": 64,
+      "batch_size": 100,
+      "samples": 1000,
+      "constraints": 1201588,
+      "setup_time_s": 20.513105269,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 2.143523162,
+      "per_sample_s": 0.827,
+      "accuracy": 71.60,
+      "speedup": 2.4
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 1,
+      "batch_size": 10,
+      "samples": 2000,
+      "constraints": 213118,
+      "setup_time_s": 2.63264311,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.362,
+      "accuracy": 71.60,
+      "speedup": 5.5
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 2,
+      "batch_size": 10,
+      "samples": 2000,
+      "constraints": 213118,
+      "setup_time_s": 2.583817216,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 3.419974447,
+      "per_sample_s": 0.324,
+      "accuracy": 71.60,
+      "speedup": 6.2
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 4,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.516740197,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 8,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.620708508,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 16,
+      "batch_size": 10,
+      "samples": 2000,
+      "constraints": 213118,
+      "setup_time_s": 2.705668279,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 27.6567858,
+      "per_sample_s": 0.295,
+      "accuracy": 71.60,
+      "speedup": 6.8
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 32,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.43738977,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 64,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.597272866,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 1,
+      "batch_size": 20,
+      "samples": 2000,
+      "constraints": 322948,
+      "setup_time_s": 5.512032661,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.339,
+      "accuracy": 71.60,
+      "speedup": 5.9
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 2,
+      "batch_size": 20,
+      "samples": 2000,
+      "constraints": 322948,
+      "setup_time_s": 4.857210718,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 3.524194457,
+      "per_sample_s": 0.299,
+      "accuracy": 71.60,
+      "speedup": 6.7
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 4,
+      "batch_size": 20,
+      "samples": 2000,
+      "constraints": 322948,
+      "setup_time_s": 5.03445989,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 4.38805104,
+      "per_sample_s": 0.292,
+      "accuracy": 71.60,
+      "speedup": 6.8
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 8,
+      "batch_size": 20,
+      "samples": 2000,
+      "constraints": 322948,
+      "setup_time_s": 4.789173322,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 13.438329621,
+      "per_sample_s": 0.277,
+      "accuracy": 71.60,
+      "speedup": 7.2
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 16,
+      "batch_size": 20,
+      "samples": 2000,
+      "constraints": 322948,
+      "setup_time_s": 5.024522256,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 34.274294753,
+      "per_sample_s": 0.288,
+      "accuracy": 71.60,
+      "speedup": 6.9
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 32,
+      "batch_size": 20,
+      "samples": 0,
+      "constraints": 322948,
+      "setup_time_s": 5.166426025,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 64,
+      "batch_size": 20,
+      "samples": 2000,
+      "constraints": 322948,
+      "setup_time_s": 4.857081023,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 25.202227959,
+      "per_sample_s": 0.296,
+      "accuracy": 71.60,
+      "speedup": 6.8
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 1,
+      "batch_size": 40,
+      "samples": 2000,
+      "constraints": 542608,
+      "setup_time_s": 9.489747825,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.353,
+      "accuracy": 71.60,
+      "speedup": 5.7
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 2,
+      "batch_size": 40,
+      "samples": 2000,
+      "constraints": 542608,
+      "setup_time_s": 10.076524589,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.269279126,
+      "per_sample_s": 0.321,
+      "accuracy": 71.60,
+      "speedup": 6.2
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 4,
+      "batch_size": 40,
+      "samples": 2000,
+      "constraints": 542608,
+      "setup_time_s": 8.801083422,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 5.810404256,
+      "per_sample_s": 0.301,
+      "accuracy": 71.60,
+      "speedup": 6.7
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 8,
+      "batch_size": 40,
+      "samples": 2000,
+      "constraints": 542608,
+      "setup_time_s": 9.870505634,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 9.865789802,
+      "per_sample_s": 0.290,
+      "accuracy": 71.60,
+      "speedup": 6.9
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 16,
+      "batch_size": 40,
+      "samples": 2000,
+      "constraints": 542608,
+      "setup_time_s": 9.730292982,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 16.601950702,
+      "per_sample_s": 0.653,
+      "accuracy": 71.60,
+      "speedup": 3.1
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 32,
+      "batch_size": 40,
+      "samples": 0,
+      "constraints": 542608,
+      "setup_time_s": 10.232885734,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 64,
+      "batch_size": 40,
+      "samples": 2000,
+      "constraints": 542608,
+      "setup_time_s": 9.910544744,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 19.907281596,
+      "per_sample_s": 0.725,
+      "accuracy": 71.60,
+      "speedup": 2.8
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 1,
+      "batch_size": 80,
+      "samples": 2000,
+      "constraints": 981928,
+      "setup_time_s": 11.482904343,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.182,
+      "accuracy": 71.60,
+      "speedup": 11.0
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 2,
+      "batch_size": 80,
+      "samples": 2000,
+      "constraints": 981928,
+      "setup_time_s": 11.41941137,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.163,
+      "accuracy": 71.60,
+      "speedup": 12.3
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 4,
+      "batch_size": 80,
+      "samples": 2000,
+      "constraints": 981928,
+      "setup_time_s": 11.246678785,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.518922277,
+      "per_sample_s": 0.160,
+      "accuracy": 71.60,
+      "speedup": 12.5
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 8,
+      "batch_size": 80,
+      "samples": 2000,
+      "constraints": 981928,
+      "setup_time_s": 11.633841741,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 4.939477578,
+      "per_sample_s": 0.159,
+      "accuracy": 71.60,
+      "speedup": 12.6
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 16,
+      "batch_size": 80,
+      "samples": 2000,
+      "constraints": 981928,
+      "setup_time_s": 11.267111243,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 11.049585522,
+      "per_sample_s": 0.322,
+      "accuracy": 71.60,
+      "speedup": 6.2
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 32,
+      "batch_size": 80,
+      "samples": 2000,
+      "constraints": 981928,
+      "setup_time_s": 11.543906976,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 6.329646718,
+      "per_sample_s": 0.347,
+      "accuracy": 71.60,
+      "speedup": 5.8
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 64,
+      "batch_size": 80,
+      "samples": 2000,
+      "constraints": 981928,
+      "setup_time_s": 10.948379595,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 24.010297806,
+      "per_sample_s": 0.307,
+      "accuracy": 71.60,
+      "speedup": 6.5
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 1,
+      "batch_size": 100,
+      "samples": 2000,
+      "constraints": 1201588,
+      "setup_time_s": 20.27639059,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.290,
+      "accuracy": 71.60,
+      "speedup": 6.9
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 2,
+      "batch_size": 100,
+      "samples": 2000,
+      "constraints": 1201588,
+      "setup_time_s": 20.273140494,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.275,
+      "accuracy": 71.60,
+      "speedup": 7.3
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 4,
+      "batch_size": 100,
+      "samples": 2000,
+      "constraints": 1201588,
+      "setup_time_s": 19.637683155,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.252,
+      "accuracy": 71.60,
+      "speedup": 7.9
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 8,
+      "batch_size": 100,
+      "samples": 2000,
+      "constraints": 1201588,
+      "setup_time_s": 18.989744001,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 7.295798838,
+      "per_sample_s": 0.554,
+      "accuracy": 71.60,
+      "speedup": 3.6
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 16,
+      "batch_size": 100,
+      "samples": 0,
+      "constraints": 1201588,
+      "setup_time_s": 19.375115297,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 32,
+      "batch_size": 100,
+      "samples": 0,
+      "constraints": 1201588,
+      "setup_time_s": 20.597275636,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 2000,
+      "workers": 64,
+      "batch_size": 100,
+      "samples": 0,
+      "constraints": 1201588,
+      "setup_time_s": 20.93587642,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 1,
+      "batch_size": 10,
+      "samples": 3000,
+      "constraints": 213118,
+      "setup_time_s": 2.828868455,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.060751716,
+      "per_sample_s": 0.359,
+      "accuracy": 71.13,
+      "speedup": 5.6
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 2,
+      "batch_size": 10,
+      "samples": 3000,
+      "constraints": 213118,
+      "setup_time_s": 2.639375229,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 6.534293371,
+      "per_sample_s": 0.319,
+      "accuracy": 71.13,
+      "speedup": 6.3
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 4,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.602224231,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 8,
+      "batch_size": 10,
+      "samples": 3000,
+      "constraints": 213118,
+      "setup_time_s": 2.525836136,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 21.668596513,
+      "per_sample_s": 0.281,
+      "accuracy": 71.13,
+      "speedup": 7.1
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 16,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.640849804,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 32,
+      "batch_size": 10,
+      "samples": 3000,
+      "constraints": 213118,
+      "setup_time_s": 2.66238726,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 37.197358578,
+      "per_sample_s": 0.283,
+      "accuracy": 71.13,
+      "speedup": 7.1
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 64,
+      "batch_size": 10,
+      "samples": 0,
+      "constraints": 213118,
+      "setup_time_s": 2.503801245,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 1,
+      "batch_size": 20,
+      "samples": 3000,
+      "constraints": 322948,
+      "setup_time_s": 5.214500355,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.340,
+      "accuracy": 71.13,
+      "speedup": 5.9
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 2,
+      "batch_size": 20,
+      "samples": 3000,
+      "constraints": 322948,
+      "setup_time_s": 5.161116803,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 4.468812842,
+      "per_sample_s": 0.299,
+      "accuracy": 71.13,
+      "speedup": 6.7
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 4,
+      "batch_size": 20,
+      "samples": 0,
+      "constraints": 322948,
+      "setup_time_s": 4.884695685,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 8,
+      "batch_size": 20,
+      "samples": 3000,
+      "constraints": 322948,
+      "setup_time_s": 4.910088767,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 17.679766224,
+      "per_sample_s": 0.279,
+      "accuracy": 70.07,
+      "speedup": 7.2
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 16,
+      "batch_size": 20,
+      "samples": 3000,
+      "constraints": 322948,
+      "setup_time_s": 5.276607426,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 33.659975732,
+      "per_sample_s": 0.278,
+      "accuracy": 71.13,
+      "speedup": 7.2
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 32,
+      "batch_size": 20,
+      "samples": 3000,
+      "constraints": 322948,
+      "setup_time_s": 5.087843763,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 35.589386586,
+      "per_sample_s": 0.285,
+      "accuracy": 71.13,
+      "speedup": 7.0
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 64,
+      "batch_size": 20,
+      "samples": 3000,
+      "constraints": 322948,
+      "setup_time_s": 5.091015664,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 41.219851285,
+      "per_sample_s": 0.283,
+      "accuracy": 71.13,
+      "speedup": 7.1
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 1,
+      "batch_size": 40,
+      "samples": 3000,
+      "constraints": 542608,
+      "setup_time_s": 10.025939948,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.345,
+      "accuracy": 71.13,
+      "speedup": 5.8
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 2,
+      "batch_size": 40,
+      "samples": 3000,
+      "constraints": 542608,
+      "setup_time_s": 9.889963328,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 3.847238066,
+      "per_sample_s": 0.313,
+      "accuracy": 71.13,
+      "speedup": 6.4
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 4,
+      "batch_size": 40,
+      "samples": 3000,
+      "constraints": 542608,
+      "setup_time_s": 8.869692084,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 4.779198942,
+      "per_sample_s": 0.302,
+      "accuracy": 71.13,
+      "speedup": 6.6
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 8,
+      "batch_size": 40,
+      "samples": 3000,
+      "constraints": 542608,
+      "setup_time_s": 9.546495048,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 18.459556736,
+      "per_sample_s": 0.297,
+      "accuracy": 71.13,
+      "speedup": 6.7
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 16,
+      "batch_size": 40,
+      "samples": 3000,
+      "constraints": 542608,
+      "setup_time_s": 10.01146684,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 23.301825134,
+      "per_sample_s": 0.625,
+      "accuracy": 71.13,
+      "speedup": 3.2
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 32,
+      "batch_size": 40,
+      "samples": 3000,
+      "constraints": 542608,
+      "setup_time_s": 10.222012084,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 20.877612162,
+      "per_sample_s": 0.644,
+      "accuracy": 71.13,
+      "speedup": 3.1
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 64,
+      "batch_size": 40,
+      "samples": 3000,
+      "constraints": 542608,
+      "setup_time_s": 10.031419723,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 20.414034399,
+      "per_sample_s": 0.671,
+      "accuracy": 71.13,
+      "speedup": 3.0
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 1,
+      "batch_size": 80,
+      "samples": 3000,
+      "constraints": 981928,
+      "setup_time_s": 11.875014075,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.183,
+      "accuracy": 71.13,
+      "speedup": 10.9
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 2,
+      "batch_size": 80,
+      "samples": 3000,
+      "constraints": 981928,
+      "setup_time_s": 11.306485599,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 2.463605508,
+      "per_sample_s": 0.164,
+      "accuracy": 71.13,
+      "speedup": 12.2
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 4,
+      "batch_size": 80,
+      "samples": 3000,
+      "constraints": 981928,
+      "setup_time_s": 11.851876695,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 4.010761598,
+      "per_sample_s": 0.159,
+      "accuracy": 71.13,
+      "speedup": 12.6
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 8,
+      "batch_size": 80,
+      "samples": 3000,
+      "constraints": 981928,
+      "setup_time_s": 11.581420466,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 7.464585659,
+      "per_sample_s": 0.157,
+      "accuracy": 71.13,
+      "speedup": 12.7
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 16,
+      "batch_size": 80,
+      "samples": 3000,
+      "constraints": 981928,
+      "setup_time_s": 11.662107641,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 13.34198978,
+      "per_sample_s": 0.348,
+      "accuracy": 71.13,
+      "speedup": 5.7
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 32,
+      "batch_size": 80,
+      "samples": 3000,
+      "constraints": 981928,
+      "setup_time_s": 12.012942071,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 24.115396537,
+      "per_sample_s": 0.346,
+      "accuracy": 71.13,
+      "speedup": 5.8
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 64,
+      "batch_size": 80,
+      "samples": 3000,
+      "constraints": 981928,
+      "setup_time_s": 10.520514658,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 12.397949381,
+      "per_sample_s": 0.327,
+      "accuracy": 71.13,
+      "speedup": 6.1
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 1,
+      "batch_size": 100,
+      "samples": 3000,
+      "constraints": 1201588,
+      "setup_time_s": 20.563174938,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 0,
+      "per_sample_s": 0.297,
+      "accuracy": 71.13,
+      "speedup": 6.7
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 2,
+      "batch_size": 100,
+      "samples": 3000,
+      "constraints": 1201588,
+      "setup_time_s": 19.351038717,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 1.784654218,
+      "per_sample_s": 0.269,
+      "accuracy": 71.13,
+      "speedup": 7.4
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 4,
+      "batch_size": 100,
+      "samples": 3000,
+      "constraints": 1201588,
+      "setup_time_s": 19.359460835,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 9.592561019,
+      "per_sample_s": 0.271,
+      "accuracy": 71.13,
+      "speedup": 7.4
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 8,
+      "batch_size": 100,
+      "samples": 3000,
+      "constraints": 1201588,
+      "setup_time_s": 19.880236002,
+      "predict_time_s": 0,
+      "prove_time_s": (equential,
+      "verify_time_s": 5.629672537,
+      "per_sample_s": 0.570,
+      "accuracy": 71.13,
+      "speedup": 3.5
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 16,
+      "batch_size": 100,
+      "samples": 0,
+      "constraints": 1201588,
+      "setup_time_s": 20.027669942,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 32,
+      "batch_size": 100,
+      "samples": 0,
+      "constraints": 1201588,
+      "setup_time_s": 20.183344163,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+,
+    {
+      "dataset_size": 3000,
+      "workers": 64,
+      "batch_size": 100,
+      "samples": 0,
+      "constraints": 1201588,
+      "setup_time_s": 18.982192592,
+      "predict_time_s": ,
+      "prove_time_s": ,
+      "verify_time_s": ,
+      "per_sample_s": 0,
+      "accuracy": 0,
+      "speedup": 0
+    }
+
+  ]
+}

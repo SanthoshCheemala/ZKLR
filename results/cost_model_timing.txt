@@ -1,0 +1,15 @@
+ZKLR prove-time cost model (single-prover W=1 baseline)
+============================================================
+Constraint count is linear in batch, but PLONK proves over an
+FFT domain padded to the next power of two — so prove time is a
+STEP function of the padded domain. Per-sample cost is minimised
+when the batch fills its 2^n domain.
+
+ batch  constraints   2^n domain   fill%  prove/batch(s)  prove/sample(s)
+    10       229009       262144   87.4%           3.891           0.3891
+    20       344099       524288   65.6%           7.164           0.3582
+    40       574279      1048576   54.8%          14.637           0.3659
+    80      1034639      1048576   98.7%          14.931           0.1866
+
+Best per-sample prove: batch=80 (98.7% domain fill) -> 0.1866 s/sample
+(naive linear fit T_prove≈4.43+0.153·B has R^2=0.735 — poor, because the true cost is domain-quantised, not linear)

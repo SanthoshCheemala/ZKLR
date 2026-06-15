@@ -31,14 +31,10 @@ BIAS=$(grep -i '^Bias:' "$WEIGHTS_FILE" | cut -d: -f2 | tr -d ' ')
 CPUS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 if [[ "$WORKERS" -gt "$CPUS" ]]; then WORKERS="$CPUS"; fi
 
-# Locate GNU time (Linux: /usr/bin/time -v; macOS lacks -v).
-TIMECMD=""
-if /usr/bin/time -v true >/dev/null 2>&1; then TIMECMD="/usr/bin/time -v"; fi
-
 echo "=================================================="
 echo "  ZKLR Key-Pool Memory Sweep"
 echo "  batch=$BATCH workers=$WORKERS keys=[${KEY_SIZES[*]}] reps=$REPS"
-[[ -z "$TIMECMD" ]] && echo "  (GNU time -v not found: peak RSS will be blank)"
+echo "  (peak RSS self-reported by batch_predict via /proc/self/status VmHWM)"
 echo "=================================================="
 
 mkdir -p results bin
@@ -54,23 +50,13 @@ SWEEP_CSV="results/keypool_runs.csv"; rm -f "$SWEEP_CSV"
 for K in "${KEY_SIZES[@]}"; do
   for ((run=1; run<=REPS; run++)); do
     printf "[keys=%-2s rep=%-2s] " "$K" "$run"
-    RSS_MB=""
-    if [[ -n "$TIMECMD" ]]; then
-      TLOG=$(mktemp)
-      $TIMECMD ./bin/batch_predict -dataset="$DATASET" -weights="$WEIGHTS" \
-        -bias="$BIAS" -batch="$BATCH" -workers="$WORKERS" -keys="$K" \
-        -mode="$MODE" -csv="$SWEEP_CSV" -run="$run" >/dev/null 2>"$TLOG" || true
-      # GNU time reports "Maximum resident set size (kbytes)"
-      RSS_KB=$(grep -i 'Maximum resident set size' "$TLOG" | grep -oE '[0-9]+' | tail -1)
-      [[ -n "${RSS_KB:-}" ]] && RSS_MB=$(awk "BEGIN{printf \"%.1f\", $RSS_KB/1024}")
-      rm -f "$TLOG"
-    else
-      ./bin/batch_predict -dataset="$DATASET" -weights="$WEIGHTS" -bias="$BIAS" \
-        -batch="$BATCH" -workers="$WORKERS" -keys="$K" -mode="$MODE" \
-        -csv="$SWEEP_CSV" -run="$run" >/dev/null 2>&1 || true
-    fi
+    ./bin/batch_predict -dataset="$DATASET" -weights="$WEIGHTS" -bias="$BIAS" \
+      -batch="$BATCH" -workers="$WORKERS" -keys="$K" -mode="$MODE" \
+      -csv="$SWEEP_CSV" -run="$run" >/dev/null 2>&1 || true
+    # batch_predict's own CSV: prove_per_sample=$12, wall_per_sample=$13, peak_rss_mb=$16
     WALL=$(tail -1 "$SWEEP_CSV" | awk -F, '{print $13}')
     PROVE=$(tail -1 "$SWEEP_CSV" | awk -F, '{print $12}')
+    RSS_MB=$(tail -1 "$SWEEP_CSV" | awk -F, '{print $16}')
     echo "${K},${WORKERS},${BATCH},${run},${RSS_MB},${WALL},${PROVE}" >> "$CSV"
     echo "peak_rss=${RSS_MB:-NA}MB wall/sample=${WALL}s"
   done

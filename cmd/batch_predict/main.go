@@ -250,6 +250,7 @@ func main() {
 			ProveTotalSeconds: totalProve.Seconds(),
 			ProvePerSample:    provesPerSample, WallPerSample: wallPerSample,
 			ProofBytes: measuredProofSize(batchResults), Accuracy: accuracy,
+			PeakRSSmb: peakRSSmb(),
 		})
 		fmt.Printf("    Benchmark row appended → %s\n", *csvPath)
 	}
@@ -265,10 +266,11 @@ type csvRow struct {
 	ProvePerSample, WallPerSample                   float64
 	ProofBytes                                      int
 	Accuracy                                        float64
+	PeakRSSmb                                       float64
 }
 
 const csvHeader = "mode,batch,workers,keys,features,samples,run,constraints," +
-	"setup_seconds,predict_seconds,prove_total_seconds,prove_per_sample,wall_per_sample,proof_bytes,accuracy\n"
+	"setup_seconds,predict_seconds,prove_total_seconds,prove_per_sample,wall_per_sample,proof_bytes,accuracy,peak_rss_mb\n"
 
 func appendCSVRow(path string, r csvRow) {
 	needHeader := false
@@ -284,10 +286,30 @@ func appendCSVRow(path string, r csvRow) {
 	if needHeader {
 		f.WriteString(csvHeader)
 	}
-	fmt.Fprintf(f, "%s,%d,%d,%d,%d,%d,%d,%d,%.4f,%.4f,%.4f,%.5f,%.5f,%d,%.2f\n",
+	fmt.Fprintf(f, "%s,%d,%d,%d,%d,%d,%d,%d,%.4f,%.4f,%.4f,%.5f,%.5f,%d,%.2f,%.1f\n",
 		r.Mode, r.Batch, r.Workers, r.Keys, r.Features, r.Samples, r.Run, r.Constraints,
 		r.SetupSeconds, r.PredictSeconds, r.ProveTotalSeconds,
-		r.ProvePerSample, r.WallPerSample, r.ProofBytes, r.Accuracy)
+		r.ProvePerSample, r.WallPerSample, r.ProofBytes, r.Accuracy, r.PeakRSSmb)
+}
+
+// peakRSSmb returns the process peak resident set size in MB. On Linux it reads
+// VmHWM from /proc/self/status (no external tools needed); elsewhere returns 0.
+func peakRSSmb() float64 {
+	data, err := os.ReadFile("/proc/self/status")
+	if err != nil {
+		return 0
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		if strings.HasPrefix(line, "VmHWM:") {
+			fields := strings.Fields(line) // "VmHWM:   123456 kB"
+			if len(fields) >= 2 {
+				if kb, err := strconv.ParseFloat(fields[1], 64); err == nil {
+					return kb / 1024.0
+				}
+			}
+		}
+	}
+	return 0
 }
 
 // measuredProofSize returns the proof size from the first successful batch.
